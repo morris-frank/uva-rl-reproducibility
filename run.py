@@ -1,12 +1,17 @@
 import gym
 import torch
 import numpy as np
+import argparse
 
 from src import train, Approximator
 
 
 def main():
-    env = gym.envs.make("CartPole-v0")
+    parser = argparse.ArgumentParser(description='play RL games')
+    parser.add_argument('--env', default='CartPole-v0', help='https://gym.openai.com/envs/')
+    args = parser.parse_args()
+
+    env = gym.envs.make(args.env)
 
     net = torch.nn.Sequential(
             torch.nn.Linear(np.prod(env.observation_space.shape), env.action_space.n),
