@@ -15,9 +15,9 @@ class AList(list):
 
 
 class Approximator(torch.nn.Module):
-
-    def __init__(self, alpha, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         super(Approximator, self).__init__()
+        self.net = net
         self.optimizer = optimizer(self.parameters(), lr=alpha)
         self.loss_function = loss()
 
@@ -38,24 +38,17 @@ class Approximator(torch.nn.Module):
         G = G + (gamma * (self(last_state_action[0])[last_state_action[1]] if last_state_action != None else 0))
         torch.set_grad_enabled(True)
         target = self(target_state_action[0])[target_state_action[1]]
-        loss = self.loss_function(G, target)
+        loss = (G - target)**2
         loss.backward()
         self.optimizer.step()
         return loss
 
 
-class Two_Layer_Net(Approximator):
-    def __init__(self, n_in, n_out, alpha):
-        self.net = torch.nn.Sequential(
-            torch.nn.Linear(n_in, 128),
-            torch.nn.ReLU(),
-            torch.nn.Linear(128, n_out),
-        )
-        super(Two_Layer_Net, self).__init__(alpha=alpha)
-
-
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float, semi_gradient:bool, q_learning:bool) -> List[float]:
     def choose_epsilon_greedy(state):
+        """Chooses the next action from the current Q-network with ε.greedy.
+
+        Returns action, max_action (the greedy action)"""
         max_action = torch.argmax(approximator(state)).item()
         if np.random.random() < epsilon:
             action = np.random.randint(env.action_space.n)
@@ -102,7 +95,14 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 def main():
     # Test with Mountain car
     env = gym.envs.make("CartPole-v0")
-    approximator = Two_Layer_Net(np.prod(env.observation_space.shape), env.action_space.n, 0.001)
+
+    net = torch.nn.Sequential(
+            torch.nn.Linear(np.prod(env.observation_space.shape), 128),
+            torch.nn.ReLU(),
+            torch.nn.Linear(128, env.action_space.n),
+        )
+
+    approximator = Approximator(net, 0.001)
     train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
 
 if __name__ == "__main__":
