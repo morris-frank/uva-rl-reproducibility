@@ -14,18 +14,15 @@ class AList(list):
         return super().__setitem__(key, value)
 
 
-
 class Approximator(torch.nn.Module):
 
-    def __init__(self, n_in, n_out, alpha, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, alpha, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         super(Approximator, self).__init__()
-        self.layer_1 = torch.nn.Linear(n_in, 128)
-        self.layer_2 = torch.nn.Linear(128, n_out)
         self.optimizer = optimizer(self.parameters(), lr=alpha)
-        self.loss_function = loss
+        self.loss_function = loss()
 
     def forward(self, x):
-        return self.layer_2(torch.nn.functional.relu(self.layer_1(torch.FloatTensor(x))))
+        return self.net(torch.FloatTensor(x))
 
     """
     G: descounted reward so far
@@ -47,13 +44,23 @@ class Approximator(torch.nn.Module):
         return loss
 
 
+class Two_Layer_Net(Approximator):
+    def __init__(self, n_in, n_out, alpha):
+        self.net = torch.nn.Sequential(
+            torch.nn.Linear(n_in, 128),
+            torch.nn.ReLU(),
+            torch.nn.Linear(128, n_out),
+        )
+        super(Two_Layer_Net, self).__init__(alpha=alpha)
+
+
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float, semi_gradient:bool, q_learning:bool) -> List[float]:
     def choose_epsilon_greedy(state):
+        max_action = torch.argmax(approximator(state)).item()
         if np.random.random() < epsilon:
             action = np.random.randint(env.action_space.n)
         else:
-            action = torch.argmax(approximator(state)).item()
-        max_action = torch.argmax(approximator(state)).item()
+            action = max_action
         return action, max_action
 
     loss = 0
@@ -95,7 +102,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 def main():
     # Test with Mountain car
     env = gym.envs.make("CartPole-v0")
-    approximator = Approximator(np.prod(env.observation_space.shape), env.action_space.n, 0.001)
+    approximator = Two_Layer_Net(np.prod(env.observation_space.shape), env.action_space.n, 0.001)
     train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
 
 if __name__ == "__main__":
