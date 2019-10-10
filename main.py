@@ -55,6 +55,8 @@ class Approximator(torch.nn.Module):
 
 
 class Memory(object):
+    '''a limited-capacity sampleable memory'''
+
     def __init__(self, capacity:int):
         self.capacity = capacity
         self._mem = []
