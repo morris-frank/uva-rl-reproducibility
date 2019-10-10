@@ -5,10 +5,10 @@ from tqdm import trange
 from itertools import product, count
 import torch
 
-from alist import AList
-from memory import Memory
-from approximator import Approximator
-from utils import get_get_epsilon
+from .alist import AList
+from .memory import Memory
+from .approximator import Approximator
+from .utils import get_get_epsilon
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
@@ -30,7 +30,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     :param get_epsilon
     :return: the returns for all episodes
     """
-    def choose_epsilon_greedy(state, global_it, is_q_learning=None):
+    def choose_epsilon_greedy(state, global_it: int, is_q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
 
         Returns action, max_action (the greedy action)"""
@@ -99,30 +99,3 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
             bar.set_postfix(G=f'{returns[i_episode]:02}', len=f'{durations[i_episode]:02}', loss=f'{loss:.2f}')
 
     return returns
-
-
-def main():
-    env = gym.envs.make("CartPole-v0")
-    hidden = 128
-    net = torch.nn.Sequential(
-            torch.nn.Linear(np.prod(env.observation_space.shape), hidden),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden, env.action_space.n),
-        )
-
-    approximator = Approximator(net, alpha=1e-5, loss=torch.nn.MSELoss)
-    train(approximator, env,
-          n_step=0,
-          epsilon=0.05,
-          n_episodes=int(1e4),
-          gamma=0.8,
-          semi_gradient=True,
-          q_learning=False,
-          n_memory=10000,
-          batch_size=10,
-          render=False,
-          get_epsilon=get_get_epsilon(1000, 0.05))
-
-
-if __name__ == "__main__":
-    main()
