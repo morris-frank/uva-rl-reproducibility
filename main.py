@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import gym
+import random
 from typing import List
 from tqdm import trange
 from itertools import product, count
@@ -43,6 +44,24 @@ class Approximator(torch.nn.Module):
         self.optimizer.step()
         return loss
 
+
+class Memory(object):
+    def __init__(self, capacity:int):
+        self.capacity = capacity
+        self._mem = []
+
+    def __len__(self):
+        return len(self._mem)
+
+    def push(self, element: object):
+        """Add an element to the memory"""
+        if len(self._mem) > self.capacity:
+            del self._mem[0]
+        self._mem.append(element)
+
+    def sample(self, n: int):
+        """Sample n elements from the memory"""
+        return random.sample(self._mem, n)
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float, semi_gradient:bool, q_learning:bool) -> List[float]:
     def choose_epsilon_greedy(state):
@@ -102,7 +121,7 @@ def main():
             torch.nn.Linear(128, env.action_space.n),
         )
 
-    approximator = Approximator(net, 0.001)
+    approximator = Approximator(net, 1e-5)
     train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
 
 if __name__ == "__main__":
