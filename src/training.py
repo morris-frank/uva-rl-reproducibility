@@ -13,7 +13,7 @@ from .utils import get_get_epsilon
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
           get_epsilon: callable = get_get_epsilon(1000, 0.05))\
-        -> np.ndarray:
+        -> (np.ndarray, np.ndarray):
     """
 
     :param approximator: the value function approximator
@@ -97,4 +97,4 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{returns[i_episode]:02}', len=f'{durations[i_episode]:02}', loss=f'{loss:.2f}')
 
-    return returns
+    return returns, durations
