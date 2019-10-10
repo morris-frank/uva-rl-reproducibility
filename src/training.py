@@ -9,7 +9,7 @@ from torch.utils.tensorboard import SummaryWriter
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon
+from .utils import get_get_epsilon, write_csv
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
@@ -98,12 +98,15 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                 break
         duration = len(states)
         G = np.sum(rewards)
-        stuff = {
+        stats = {
+            'episode': i_episode,
             'duration': duration,
             'G': G,
             'loss': loss,
         }
-        writer.add_scalars('stats', stuff, i_episode)
+        name = env.spec.id
+        writer.add_scalars(name, stats, i_episode)
+        write_csv([stats], name)
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}')
     # writer.close()
