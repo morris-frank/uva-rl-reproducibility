@@ -16,7 +16,7 @@ class AList(list):
 
 
 class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha, batch_size=10, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         super(Approximator, self).__init__()
         self.net = net
         self.optimizer = optimizer(self.parameters(), lr=alpha)
@@ -32,17 +32,32 @@ class Approximator(torch.nn.Module):
     target_state_action: tuple of target state action
     semi_gradient: Bool
     """
-    def update_weights(self, G, gamma, last_state_action, target_state_action, semi_gradient):
+    def train(self, samples: list, gamma: float, semi_gradient: bool):
+        # G, state τ, action τ, state t, action t
+        Gs, τ_states, τ_actions, t_states, t_actions = zip(*samples)
+        Gs = list(Gs)
+
         self.optimizer.zero_grad()
         if semi_gradient:
             torch.set_grad_enabled(False)
-        G = G + (gamma * (self(last_state_action[0])[last_state_action[1]] if last_state_action != None else 0))
+
+        # Compute the actual discounted returns:
+        for i, (state, action) in enumerate(zip(t_states, t_actions)):
+            if action is not None:
+                Gs[i] = Gs[i] + gamma * self(state)[action]
+
+        Gs = torch.FloatTensor(Gs)
+        τ_states = torch.FloatTensor(τ_states)
+        τ_actions = torch.tensor(τ_actions, dtype=torch.int64)
+
         torch.set_grad_enabled(True)
-        target = self(target_state_action[0])[target_state_action[1]]
-        loss = (G - target)**2
+        target_q_vals = self(τ_states)
+        target = target_q_vals[torch.arange(target_q_vals.size(0)), τ_actions]
+
+        loss = self.loss_function(Gs, target)
         loss.backward()
         self.optimizer.step()
-        return loss
+        return loss.item()
 
 
 class Memory(object):
@@ -63,21 +78,30 @@ class Memory(object):
         """Sample n elements from the memory"""
         return random.sample(self._mem, n)
 
-def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float, semi_gradient:bool, q_learning:bool) -> List[float]:
-    def choose_epsilon_greedy(state):
+def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float,
+          gamma: float, semi_gradient:bool, q_learning:bool, n_memory: int  = 1e4, batch_size: int = 10) -> List[float]:
+    def choose_epsilon_greedy(state, q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
 
         Returns action, max_action (the greedy action)"""
+        if state is None:
+            return None
         max_action = torch.argmax(approximator(state)).item()
         if np.random.random() < epsilon:
             action = np.random.randint(env.action_space.n)
         else:
             action = max_action
-        return action, max_action
+        if q_learning is None:
+            return action, max_action
+        elif q_learning is True:
+            return max_action
+        else:
+            return action
 
     loss = 0
     n_step += 1 #ARGH
     durations, returns = np.zeros(n_episodes), np.zeros(n_episodes)
+    memory = Memory(n_memory)
 
     for i_episode in trange(n_episodes, desc=env.spec.id):
         # Reset enviroment
@@ -98,15 +122,20 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
             #print("Outside", t+1, len(actions))
             if τ >= 0:
                 G = np.sum(rewards[τ:t+1] * np.power(gamma, np.linspace(0, n_step-1, n_step)))
-                #print("Inside", t, len(actions))
-                action = max_actions[t] if q_learning else actions[t]
-                last_state_action = (states[t], action) if not done else None
-                loss = approximator.update_weights(G, gamma**n_step, last_state_action, (states[τ], actions[τ]), semi_gradient)
+                experience = [G, states[τ], actions[τ], states[t] if not done else None]
+                memory.push(experience)
+
+                # Start training when we have enough experience!
+                if len(memory) > batch_size:
+                    # SAMPLING:
+                    samples = memory.sample(batch_size)
+                    samples = [exp + [choose_epsilon_greedy(exp[3], q_learning)] for exp in samples]
+                    # Now samples are (G, state of τ, action of τ, state of t, action of t)
+
+                    loss = approximator.train(samples, gamma**n_step, semi_gradient)
             if τ == T - 1:
                 durations[i_episode] = len(states)
                 returns[i_episode] = np.sum(rewards)
-                print(returns[i_episode])
-                #print(loss)
                 break
 
     return returns
@@ -121,7 +150,7 @@ def main():
             torch.nn.Linear(128, env.action_space.n),
         )
 
-    approximator = Approximator(net, 1e-5)
+    approximator = Approximator(net, alpha=1e-5)
     train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
 
 if __name__ == "__main__":
