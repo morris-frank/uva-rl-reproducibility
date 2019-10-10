@@ -148,11 +148,11 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 
 def main():
     env = gym.envs.make("CartPole-v0")
-
+    hidden = 128
     net = torch.nn.Sequential(
-            torch.nn.Linear(np.prod(env.observation_space.shape), 128),
+            torch.nn.Linear(np.prod(env.observation_space.shape), hidden),
             torch.nn.ReLU(),
-            torch.nn.Linear(128, env.action_space.n),
+            torch.nn.Linear(hidden, env.action_space.n),
         )
 
     approximator = Approximator(net, alpha=1e-5)
