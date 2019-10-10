@@ -25,13 +25,6 @@ class Approximator(torch.nn.Module):
     def forward(self, x):
         return self.net(torch.FloatTensor(x))
 
-    """
-    G: descounted reward so far
-    gamma: discount of the last_state_action
-    last_state_action: tuple of state action or None if there is none.
-    target_state_action: tuple of target state action
-    semi_gradient: Bool
-    """
     def train(self, samples: list, gamma: float, semi_gradient: bool):
         # G, state τ, action τ, state t, action t
         Gs, τ_states, τ_actions, t_states, t_actions = zip(*samples)
@@ -78,8 +71,10 @@ class Memory(object):
         """Sample n elements from the memory"""
         return random.sample(self._mem, n)
 
+
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float,
-          gamma: float, semi_gradient:bool, q_learning:bool, n_memory: int  = 1e4, batch_size: int = 10) -> List[float]:
+          gamma: float, semi_gradient:bool, q_learning:bool, n_memory: int  = 1e4, batch_size: int = 10,
+          render: bool = False) -> List[float]:
     def choose_epsilon_greedy(state, q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
 
@@ -117,7 +112,8 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         T = np.inf
         for t in count():
             τ = t - n_step + 1
-            env.render()
+            if render:
+                env.render()
             if t < T:
                 states[t + 1], rewards[t], done, _ = env.step(actions[t])
 
@@ -125,7 +121,6 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                     T = t + 1
                 else:
                     actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[τ + n_step])
-            #print("Outside", t+1, len(actions))
             if τ >= 0:
                 G = np.sum(rewards[τ:t+1] * np.power(gamma, np.linspace(0, n_step-1, n_step)))
                 experience = [G, states[τ], actions[τ], states[t] if not done else None]
@@ -140,10 +135,11 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 
                     loss = approximator.train(samples, gamma**n_step, semi_gradient)
             if τ == T - 1:
-                durations[i_episode] = len(states)
-                returns[i_episode] = np.sum(rewards)
                 break
-        bar.set_postfix(G=G, t=f'{t:02}', loss=f'{loss.item():.2f}')
+        durations[i_episode] = len(states)
+        returns[i_episode] = np.sum(rewards)
+        if i_episode % 10 == 0:
+            bar.set_postfix(G=f'{returns[i_episode]:02}', len=f'{durations[i_episode]:02}', loss=f'{loss:.2f}')
 
     return returns
 
@@ -158,7 +154,16 @@ def main():
         )
 
     approximator = Approximator(net, alpha=1e-5)
-    train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
+    train(approximator, env,
+          n_step=0,
+          n_episodes=1e4,
+          epsilon=0.05,
+          gamma=0.8,
+          semi_gradient=True,
+          q_learning=False,
+          n_memory=1e4,
+          batch_size=10,
+          render=False)
 
 if __name__ == "__main__":
     main()
