@@ -1,7 +1,8 @@
 import torch
+import numpy as np
 
 class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha: float, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         """
 
         :param net: The sequential network definition
@@ -22,11 +23,11 @@ class Approximator(torch.nn.Module):
         """
         return self.net(torch.FloatTensor(x))
 
-    def batch_train(self, samples: list, gamma: float, semi_gradient: bool):
+    def batch_train(self, samples: list, gamma: float, semi_gradient: bool = True):
         """
         Train the network with the batch of experience samples
         :param samples: the list of samples, each sample is (G, start state, start action, last state, last action)
-        :param gamma: the discount gamma for the last element in the trajectory ( == gamma**n_step
+        :param gamma: the discount gamma for the last element in the trajectory (== gamma**n_step)
         :param semi_gradient: whether to use semi_gradient
         :return: the loss for the batch as float
         """
@@ -41,9 +42,11 @@ class Approximator(torch.nn.Module):
         # Compute the actual discounted returns:
         for i, (state, action) in enumerate(zip(t_states, t_actions)):
             if action is not None:
-                Gs[i] = Gs[i] + gamma * self(state)[action]
+                Gs_tensor = torch.tensor(Gs[i]).long()
+                Gs[i] = Gs_tensor + gamma * self(state)[action]
 
-        Gs = torch.FloatTensor(Gs)
+        print('Gs: ', Gs)
+        Gs = torch.tensor(Gs).float()
         τ_states = torch.FloatTensor(τ_states)
         τ_actions = torch.tensor(τ_actions, dtype=torch.int64)
 
