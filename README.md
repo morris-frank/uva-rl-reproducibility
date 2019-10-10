@@ -12,4 +12,6 @@ conda activate rl2019
 
 pytest
 python run.py
+tensorboard --logdir ./runs/
+# http://localhost:6006
 ```
