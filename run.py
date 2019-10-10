@@ -7,14 +7,14 @@ from src import train, Approximator
 
 
 def main():
-    parser = argparse.ArgumentParser(description='play RL games')
-    parser.add_argument('--env', default='CartPole-v0', help='https://gym.openai.com/envs/')
-    args = parser.parse_args()
-
     env = gym.envs.make(args.env)
 
+    env = gym.envs.make("CartPole-v0")
+    hidden = 128
     net = torch.nn.Sequential(
-            torch.nn.Linear(np.prod(env.observation_space.shape), env.action_space.n),
+            torch.nn.Linear(np.prod(env.observation_space.shape), hidden),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden, env.action_space.n),
         )
 
     approximator = Approximator(net, alpha=1e-3, loss=torch.nn.MSELoss)
