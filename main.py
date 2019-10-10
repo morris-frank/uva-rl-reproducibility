@@ -19,8 +19,8 @@ class Approximator(torch.nn.Module):
     
     def __init__(self, n_in, n_out, alpha, optimizer=torch.optim.Adam):
         super(Approximator, self).__init__()
-        self.layer_1 = torch.nn.Linear(n_in, 128)
-        self.layer_2 = torch.nn.Linear(128, n_out)
+        self.layer_1 = torch.nn.Linear(4, 128)
+        self.layer_2 = torch.nn.Linear(128, 2)
         self.optimizer = optimizer(self.parameters(), lr=alpha)
 
     def forward(self, x):
@@ -93,8 +93,12 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 def main():
     # Test with Mountain car
     env = gym.envs.make("CartPole-v0")
+    n_episodes = 100
+    n_steps = 0
+    epsilon = 0.05
+    gamma = 0.95
     approximator = Approximator(np.prod(env.observation_space.shape), env.action_space.n, 0.001)
-    train(approximator, env, 0, 10000, 0.05, 0.95, True, False)
+    train(approximator, env, n_steps, n_episodes, epsilon, gamma, True, True)
 
 if __name__ == "__main__":
     main()
