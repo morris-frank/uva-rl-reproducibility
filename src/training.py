@@ -58,6 +58,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         'n_step', n_step,
     }
     print(params)
+    results = []
 
     bar = trange(n_episodes, desc=env.spec.id)
     for i_episode in bar:
@@ -105,8 +106,11 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
             'loss': loss,
         }
         name = env.spec.id
-        writer.add_scalars(name, stats, i_episode)
-        write_csv([stats], name)
+        # writer.add_scalars(name, stats, i_episode)
+        results.append(stats)
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}')
+            write_csv(results, name)
+            results = []
+    write_csv(results, name)
     # writer.close()
