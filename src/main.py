@@ -30,14 +30,14 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     :param get_epsilon
     :return: the returns for all episodes
     """
-    def choose_epsilon_greedy(state, is_q_learning=None):
+    def choose_epsilon_greedy(state, global_it, is_q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
 
         Returns action, max_action (the greedy action)"""
         if state is None:
             return None
         max_action = torch.argmax(approximator(state)).item()
-        if np.random.random() < get_epsilon(it):
+        if np.random.random() < get_epsilon(global_it):
             action = np.random.randint(env.action_space.n)
         else:
             action = max_action
