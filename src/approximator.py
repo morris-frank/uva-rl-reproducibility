@@ -1,4 +1,5 @@
 import torch
+import numpy as np
 
 class Approximator(torch.nn.Module):
     def __init__(self, net, alpha: float, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
@@ -41,9 +42,11 @@ class Approximator(torch.nn.Module):
         # Compute the actual discounted returns:
         for i, (state, action) in enumerate(zip(t_states, t_actions)):
             if action is not None:
-                Gs[i] = Gs[i] + gamma * self(state)[action]
+                Gs_tensor = torch.tensor(Gs[i]).long()
+                Gs[i] = Gs_tensor + gamma * self(state)[action]
 
-        Gs = torch.FloatTensor(Gs)
+        print('Gs: ', Gs)
+        Gs = torch.tensor(Gs).float()
         τ_states = torch.FloatTensor(τ_states)
         τ_actions = torch.tensor(τ_actions, dtype=torch.int64)
 
