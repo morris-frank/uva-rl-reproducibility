@@ -4,6 +4,7 @@ import random
 from tqdm import trange
 from itertools import product, count
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from .alist import AList
 from .memory import Memory
@@ -50,8 +51,9 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     i_global = 0
     loss = 0
     n_step += 1  # ARGH
-    durations, returns = np.zeros(n_episodes), np.zeros(n_episodes)
     memory = Memory(n_memory)
+    # Writer will output to ./runs/ directory by default
+    writer = SummaryWriter()
     params = {
         'n_step', n_step,
     }
@@ -92,9 +94,14 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                     loss = approximator.batch_train(samples, gamma**n_step, semi_gradient)
             if τ == T - 1:
                 break
-        durations[i_episode] = len(states)
-        returns[i_episode] = np.sum(rewards)
+        duration = len(states)
+        G = np.sum(rewards)
+        stuff = {
+            'duration': duration,
+            'G': G,
+            'loss': loss,
+        }
+        writer.add_scalars('stats', stuff, i_episode)
         if i_episode % 10 == 0:
-            bar.set_postfix(G=f'{returns[i_episode]:02}', len=f'{durations[i_episode]:02}', loss=f'{loss:.2f}')
-
-    return returns, durations
+            bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}')
+    # writer.close()
