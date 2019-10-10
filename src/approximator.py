@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha: float, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         """
 
         :param net: The sequential network definition
@@ -23,11 +23,11 @@ class Approximator(torch.nn.Module):
         """
         return self.net(torch.FloatTensor(x))
 
-    def batch_train(self, samples: list, gamma: float, semi_gradient: bool):
+    def batch_train(self, samples: list, gamma: float, semi_gradient: bool = True):
         """
         Train the network with the batch of experience samples
         :param samples: the list of samples, each sample is (G, start state, start action, last state, last action)
-        :param gamma: the discount gamma for the last element in the trajectory ( == gamma**n_step
+        :param gamma: the discount gamma for the last element in the trajectory (== gamma**n_step)
         :param semi_gradient: whether to use semi_gradient
         :return: the loss for the batch as float
         """
