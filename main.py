@@ -102,8 +102,13 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     n_step += 1 #ARGH
     durations, returns = np.zeros(n_episodes), np.zeros(n_episodes)
     memory = Memory(n_memory)
+    params = {
+        'n_step', n_step,
+    }
+    print(params)
 
-    for i_episode in trange(n_episodes, desc=env.spec.id):
+    bar = trange(n_episodes, desc=env.spec.id)
+    for i_episode in bar:
         # Reset enviroment
         states, actions, rewards, max_actions = AList(), AList(), AList(), AList()
         states[0] = env.reset()
@@ -112,6 +117,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         T = np.inf
         for t in count():
             τ = t - n_step + 1
+            env.render()
             if t < T:
                 states[t + 1], rewards[t], done, _ = env.step(actions[t])
 
@@ -137,6 +143,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                 durations[i_episode] = len(states)
                 returns[i_episode] = np.sum(rewards)
                 break
+        bar.set_postfix(G=G, t=f'{t:02}', loss=f'{loss.item():.2f}')
 
     return returns
 
