@@ -14,7 +14,7 @@ def main():
 
     approximator = Approximator(net, alpha=1e-3, loss=torch.nn.MSELoss)
     train(approximator, env,
-          n_step=0,
+          n_step=2,
           n_episodes=int(1e2),
           gamma=0.8,
           semi_gradient=True,
