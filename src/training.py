@@ -78,8 +78,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                 else:
                     actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[τ + n_step], i_global)
             if τ >= 0:
-                ep_length = len(rewards[τ:t+1])
-                G = np.sum(rewards[τ:t+1]) * np.power(gamma, np.linspace(0, ep_length-1, ep_length))
+                G = np.sum(rewards[τ:t+1]) * np.power(gamma, range(len(rewards[τ:t+1])))
                 experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]
                 memory.push(experience)
 
