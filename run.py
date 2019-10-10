@@ -1,8 +1,6 @@
 import gym
 from torch import nn
 import numpy as np
-import argparse
-
 from src import train, Approximator
 
 
@@ -10,7 +8,6 @@ def main():
     env = gym.envs.make("Assault-ram-v0")
 
     isize = np.prod(env.observation_space.shape)
-    print(isize)
     osize = env.action_space.n
     hidden = [128, 64, 32]
 
