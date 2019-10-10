@@ -1,4 +1,4 @@
-from alist import AList
+from .alist import AList
 
 def test_alist():
     lst = AList([1,2,3])

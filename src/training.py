@@ -10,7 +10,7 @@ from .memory import Memory
 from .approximator import Approximator
 from .utils import get_get_epsilon
 
-def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, epsilon: float, gamma: float,
+def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
           get_epsilon: callable = get_get_epsilon(1000, 0.05))\
         -> np.ndarray:
@@ -20,7 +20,6 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     :param env: the gym enviroment
     :param n_step: how many steps ⇒ TD(n), use np.inf for MC
     :param n_episodes: how many episodes to train for
-    :param epsilon: the ε for the ε-greedy policy
     :param gamma: the discounting factor for the returns
     :param semi_gradient: whether to use semi-gradient instead of full gradient
     :param q_learning: whether to use off-policy q-learning instead of stayin on policy
@@ -80,7 +79,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                     actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[τ + n_step], i_global)
             if τ >= 0:
                 G = np.sum(rewards[τ:t+1] * np.power(gamma, np.linspace(0, n_step-1, n_step)))
-                experience = [G, states[τ], actions[τ], states[t] if not done else None]
+                experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]
                 memory.push(experience)
 
                 # Start training when we have enough experience!
