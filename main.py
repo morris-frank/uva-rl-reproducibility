@@ -158,7 +158,7 @@ def main():
     approximator = Approximator(net, alpha=1e-5)
     train(approximator, env,
           n_step=0,
-          n_episodes=1e4,
+          n_episodes=int(1e4),
           epsilon=0.05,
           gamma=0.8,
           semi_gradient=True,
