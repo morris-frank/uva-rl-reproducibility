@@ -5,7 +5,7 @@ from src import train, Approximator
 
 
 def main():
-    env = gym.envs.make("Assault-ram-v0")
+    env = gym.envs.make("CartPole-v1")
 
     isize = np.prod(env.observation_space.shape)
     osize = env.action_space.n
@@ -28,7 +28,7 @@ def main():
           q_learning=True,
           n_memory=10000,
           batch_size=64,
-          render=True)
+          render=False)
 
 
 if __name__ == "__main__":
