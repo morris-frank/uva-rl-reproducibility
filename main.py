@@ -17,16 +17,16 @@ class AList(list):
 
 
 class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha, batch_size=10, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha: float, batch_size:int=10, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         super(Approximator, self).__init__()
         self.net = net
         self.optimizer = optimizer(self.parameters(), lr=alpha)
         self.loss_function = loss()
 
-    def forward(self, x):
+    def forward(self, x) -> torch.FloatTensor:
         return self.net(torch.FloatTensor(x))
 
-    def train(self, samples: list, gamma: float, semi_gradient: bool):
+    def train(self, samples: list, gamma: float, semi_gradient: bool) -> float:
         # G, state τ, action τ, state t, action t
         Gs, τ_states, τ_actions, t_states, t_actions = zip(*samples)
         Gs = list(Gs)
@@ -57,7 +57,7 @@ class Approximator(torch.nn.Module):
 class Memory(object):
     '''a limited-capacity sampleable memory'''
 
-    def __init__(self, capacity:int):
+    def __init__(self, capacity: int):
         self.capacity = capacity
         self._mem = []
 
