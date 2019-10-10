@@ -9,6 +9,7 @@ import torch
 
 
 class AList(list):
+    '''a list that lets you append by setting to the next index'''
     def __setitem__(self, key, value):
         if key == len(self):
             self.append(None)
@@ -144,7 +145,6 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     return returns
 
 def main():
-    # Test with Mountain car
     env = gym.envs.make("CartPole-v0")
 
     net = torch.nn.Sequential(
