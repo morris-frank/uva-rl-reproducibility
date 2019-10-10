@@ -45,7 +45,6 @@ class Approximator(torch.nn.Module):
                 Gs_tensor = torch.tensor(Gs[i]).long()
                 Gs[i] = Gs_tensor + gamma * self(state)[action]
 
-        print('Gs: ', Gs)
         Gs = torch.tensor(Gs).float()
         τ_states = torch.FloatTensor(τ_states)
         τ_actions = torch.tensor(τ_actions, dtype=torch.int64)
