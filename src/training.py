@@ -13,7 +13,7 @@ from .utils import get_get_epsilon, write_csv
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
-          get_epsilon: callable = get_get_epsilon(1000, 0.05))\
+          get_epsilon: callable = get_get_epsilon(1000, 0.05), device=torch.device("cpu"))\
         -> (np.ndarray, np.ndarray):
     """
 
