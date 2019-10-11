@@ -12,8 +12,8 @@ from .approximator import Approximator
 from .utils import get_get_epsilon, write_csv
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
-          semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
-          get_epsilon: callable = get_get_epsilon(1000, 0.05), device=torch.device("cpu"))\
+          semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 64, render: bool = False,
+          get_epsilon: callable = get_get_epsilon(1000, 0.05))\
         -> (np.ndarray, np.ndarray):
     """
 
@@ -103,6 +103,10 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
             'duration': duration,
             'G': G,
             'loss': loss,
+            'gamma': gamma,
+            'n_step': n_step,
+            'semi_gradient': semi_gradient,
+            'alpha': approximator.alpha
         }
         name = env.spec.id
         writer.add_scalars(name, stats, i_episode)

@@ -10,11 +10,8 @@ def get_get_epsilon(it_at_min, min_epsilon):
     return get_epsilon
 
 def write_csv(results, name: str = 'env'):
-    meta = {}
-    cols = [*results[0].keys(), *meta.keys()]
+    cols = list(results[0].keys())
     df = pd.DataFrame(results, columns=cols)
-    for k, v in meta.items():
-        df[k] = v
     csv_file = os.path.join(os.getcwd(), 'data', f'{name}.csv')
     if os.path.isfile(csv_file):
         df.to_csv(csv_file, header=False, mode='a')

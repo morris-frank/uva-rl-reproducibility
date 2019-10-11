@@ -1,0 +1,4 @@
+title: Semi-gradient vs Full-gradient in Q-learning
+markdown: kramdown
+kramdown:
+    math_engine: mathjax
