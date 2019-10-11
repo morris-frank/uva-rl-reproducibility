@@ -9,9 +9,17 @@ from src import train, Approximator
 def main():
     parser = argparse.ArgumentParser(description='play RL games')
     parser.add_argument('--env', default='CartPole-v0', help='https://gym.openai.com/envs/')
+    parser.add_argument('--seed', default=0, help='random seed')
     args = parser.parse_args()
 
     env = gym.envs.make(args.env)
+
+    # set seed
+    seed = args.seed
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
     net = torch.nn.Sequential(
         torch.nn.Linear(np.prod(env.observation_space.shape), 128),

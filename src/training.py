@@ -4,11 +4,12 @@ import random
 from tqdm import trange
 from itertools import product, count
 import torch
+from torch.utils.tensorboard import SummaryWriter
 
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon
+from .utils import get_get_epsilon, write_csv
 
 def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
           semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 10, render: bool = False,
@@ -50,8 +51,9 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     i_global = 0
     loss = 0
     n_step += 1  # ARGH
-    durations, returns = np.zeros(n_episodes), np.zeros(n_episodes)
     memory = Memory(n_memory)
+    # Writer will output to ./runs/ directory by default
+    writer = SummaryWriter()
     params = {
         'n_step', n_step,
     }
@@ -65,9 +67,10 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global)
 
         T = np.inf
+        _n_step = n_step
         for t in count():
             i_global += 1
-            τ = t - n_step + 1
+            τ = t - _n_step + 1
             if render:
                 env.render()
             if t < T:
@@ -75,8 +78,9 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
 
                 if done:
                     T = t + 1
+                    _n_step = T
                 else:
-                    actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[τ + n_step], i_global)
+                    actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[t + 1], i_global)
             if τ >= 0:
                 G = np.sum(rewards[τ:t+1] * np.power(gamma, range(len(rewards[τ:t+1]))))
                 experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]
@@ -92,9 +96,17 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
                     loss = approximator.batch_train(samples, gamma**n_step, semi_gradient)
             if τ == T - 1:
                 break
-        durations[i_episode] = len(states)
-        returns[i_episode] = np.sum(rewards)
+        duration = len(states)
+        G = np.sum(rewards)
+        stats = {
+            'episode': i_episode,
+            'duration': duration,
+            'G': G,
+            'loss': loss,
+        }
+        name = env.spec.id
+        writer.add_scalars(name, stats, i_episode)
+        write_csv([stats], name)
         if i_episode % 10 == 0:
-            bar.set_postfix(G=f'{returns[i_episode]:02}', len=f'{durations[i_episode]:02}', loss=f'{loss:.2f}')
-
-    return returns, durations
+            bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}')
+    # writer.close()
