@@ -12,7 +12,8 @@ class Approximator(torch.nn.Module):
         """
         super(Approximator, self).__init__()
         self.net = net
-        self.optimizer = optimizer(self.parameters(), lr=alpha)
+        self.alpha = alpha
+        self.optimizer = optimizer(self.parameters(), lr=self.alpha)
         self.loss_function = loss()
 
     def forward(self, x):
