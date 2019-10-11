@@ -2,7 +2,7 @@ import torch
 import numpy as np
 
 class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss, device=torch.device("cpu")):
         """
 
         :param net: The sequential network definition
@@ -15,6 +15,8 @@ class Approximator(torch.nn.Module):
         self.alpha = alpha
         self.optimizer = optimizer(self.parameters(), lr=self.alpha)
         self.loss_function = loss()
+        self.device = device
+        self.to(device)
 
     def forward(self, x):
         """
@@ -22,7 +24,8 @@ class Approximator(torch.nn.Module):
         :param x:
         :return:
         """
-        return self.net(torch.FloatTensor(x))
+        x = torch.FloatTensor(x).to(self.device)
+        return self.net(x)
 
     def batch_train(self, samples: list, gamma: float, semi_gradient: bool = True):
         """
@@ -53,7 +56,7 @@ class Approximator(torch.nn.Module):
         target_q_vals = self(τ_states)
         target = target_q_vals[torch.arange(target_q_vals.size(0)), τ_actions]
 
-        loss = self.loss_function(Gs, target)
+        loss = self.loss_function(Gs.to(self.device), target)
         loss.backward()
         self.optimizer.step()
         return loss.item()
