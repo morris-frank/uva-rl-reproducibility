@@ -1,6 +1,8 @@
 import torch
 import numpy as np
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 class Approximator(torch.nn.Module):
     def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss):
         """
@@ -21,7 +23,9 @@ class Approximator(torch.nn.Module):
         :param x:
         :return:
         """
-        return self.net(torch.FloatTensor(x))
+        x = torch.FloatTensor(x).to(device)
+        x = x.view(-1, 3, 210, 160)
+        return self.net(x)
 
     def batch_train(self, samples: list, gamma: float, semi_gradient: bool = True):
         """
@@ -42,7 +46,7 @@ class Approximator(torch.nn.Module):
         # Compute the actual discounted returns:
         for i, (state, action) in enumerate(zip(t_states, t_actions)):
             if action is not None:
-                Gs[i] = Gs[i] + gamma * self(state)[action].item()
+                Gs[i] = Gs[i] + gamma * self(state)[:, action].item()
 
         Gs = torch.tensor(Gs, dtype=torch.float)
         τ_states = torch.FloatTensor(τ_states)
@@ -52,7 +56,7 @@ class Approximator(torch.nn.Module):
         target_q_vals = self(τ_states)
         target = target_q_vals[torch.arange(target_q_vals.size(0)), τ_actions]
 
-        loss = self.loss_function(Gs, target)
+        loss = self.loss_function(Gs.to(device), target.to(device))
         loss.backward()
         self.optimizer.step()
         return loss.item()
