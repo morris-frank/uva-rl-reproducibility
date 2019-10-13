@@ -112,7 +112,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         # Add to list for dataframe
         duration_list.append(duration)
         G_list.append(G)
-        loss_list.append(loss.item())
+        loss_list.append(loss)
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}')
     # writer.close()
