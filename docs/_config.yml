@@ -1,5 +1,5 @@
 theme: minima
-title: Semi-gradient vs Full-gradient in Q-learning
+title: Reinforcement Learning
 markdown: kramdown
 kramdown:
     math_engine: mathjax
