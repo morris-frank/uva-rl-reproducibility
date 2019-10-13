@@ -1,6 +1,7 @@
 import numpy as np
 import gym
 import random
+import pandas as pd
 from tqdm import trange
 from itertools import product, count
 import torch
@@ -30,6 +31,12 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     :param get_epsilon
     :return: the returns for all episodes
     """
+    # Init Pandas Dataframe
+    data = pd.DataFrame()
+    duration_list = []
+    G_list = []
+    loss_list = []
+
     def choose_epsilon_greedy(state, global_it: int, is_q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
 
@@ -114,3 +121,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}', ε=f'{get_epsilon(i_global):.2f}')
     # writer.close()
+    data['Duration'] = duration_list
+    data['G'] = G_list
+    data['Loss'] = loss_list
+    return data
