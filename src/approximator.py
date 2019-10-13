@@ -2,7 +2,7 @@ import torch
 from torch import nn
 
 class Approximator(nn.Module):
-    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device("cpu")):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
         """
 
         :param net: The sequential network definition
@@ -46,7 +46,7 @@ class Approximator(nn.Module):
         # Compute the actual discounted returns:
         for i, (state, action) in enumerate(zip(t_states, t_actions)):
             if action is not None:
-                Gs[i] = Gs[i] + gamma * self(state)[action].item()
+                Gs[i] = Gs[i] + gamma * self(state)[:, action].item()
 
         Gs = torch.tensor(Gs, dtype=torch.float)
         τ_states = torch.FloatTensor(τ_states)
@@ -56,7 +56,7 @@ class Approximator(nn.Module):
         target_q_vals = self(τ_states)
         target = target_q_vals[torch.arange(target_q_vals.size(0)), τ_actions]
 
-        loss = self.loss_function(Gs.to(self.device), target)
+        loss = self.loss_function(Gs.to(self.device), target.to(device))
         loss.backward()
         self.optimizer.step()
         return loss.item()

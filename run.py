@@ -18,13 +18,6 @@ def main():
 
     env = gym.envs.make(args.env)
 
-    # set seed
-    seed = args.seed
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
-
     net = nn.Sequential(
         nn.Linear(np.prod(env.observation_space.shape), 128),
         nn.ReLU(),
