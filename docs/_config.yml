@@ -1,4 +1,4 @@
-theme: jekyll-themes-minima
+theme: minima
 title: Semi-gradient vs Full-gradient in Q-learning
 markdown: kramdown
 kramdown:
