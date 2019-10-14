@@ -17,9 +17,30 @@ We chose the CartPole as representive of discrete environment.
 Mountain Car for continious environment.
 PacMan as more complex environment with a pixel observation space.
 
-Each experiment ran for 100 episodes.
+## Background
+
+## Implementation
+
+## Results
+We test our hypothesis in three different enviroments, the CartPole, the Pendulum and PacMan.
+
+### Cart Pole
+Our first experiment is using the [version 0 of the CartPole](https://gym.openai.com/envs/CartPole-v0/) enviroment from the OpenAI Gym.
+
+As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning we test with n-Steps: $$n\in [0, 3, 8]$$.
+$$\gamma$$ is fixed to $$0.8$$.
+The learning rate for the approximation model $$\alpha$$ is fixed to $$1e-3$$.
+We train for each n-Step for 100 episodes and repeat each run five times.
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs with using semi-gradient and using full-gradient are color-coded.
+
+{% include CartPole-v0_duration.html %}
 
 
+### Pendulum
+
+### PacMan
 PacMan:
 ConvNet architecture?
 Training on GPU neccessary.
@@ -27,16 +48,3 @@ Training on GPU neccessary.
 ```bash
 python run.py --env=MsPacman-v0 --seed=11
 ```
-
-Cart Pole:
-
-Mountain Car:
-
-
-## Background
-
-## Implementation
-
-## Results
-
-{% include CartPole-v0_duration.html %}
