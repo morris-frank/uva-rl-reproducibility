@@ -50,20 +50,20 @@ def set_seed(seed: int):
 def parse_args() -> dict:
     parser = argparse.ArgumentParser(description='play RL games')
     parser.add_argument('--env_id', default='CartPole-v0', help='https://gym.openai.com/envs/')
-    parser.add_argument('--seed', default=0, help='random seed')
-    parser.add_argument('--alpha', default=1e-3, help='learning rate')
-    parser.add_argument('--gamma', default=0.8, help='reward decay')
-    parser.add_argument('--n_episodes', default=100, help='number of episodes to play')
-    parser.add_argument('--n_memory', default=10000, help='number of memory cells')
-    parser.add_argument('--n_step', default=2, help='number of steps to consider')
-    parser.add_argument('--batch_size', default=64, help='batch size')
-    parser.add_argument('--it_at_min', default=1000, help='iteration from which to use minimum epsilon')
-    parser.add_argument('--min_epsilon', default=0.05, help='minimum epsilon')
+    parser.add_argument('--seed', type=int, default=0, help='random seed')
+    parser.add_argument('--alpha', type=float, default=1e-3, help='learning rate')
+    parser.add_argument('--gamma', type=float, default=0.8, help='reward decay')
+    parser.add_argument('--n_episodes', type=int, default=100, help='number of episodes to play')
+    parser.add_argument('--n_memory', type=int, default=10000, help='number of memory cells')
+    parser.add_argument('--n_step', type=int, default=2, help='number of steps to consider')
+    parser.add_argument('--batch_size', type=int, default=64, help='batch size')
+    parser.add_argument('--it_at_min', type=int, default=1000, help='iteration from which to use minimum epsilon')
+    parser.add_argument('--min_epsilon', type=float, default=0.05, help='minimum epsilon')
     parser.add_argument('--semi_gradient', dest='semi_gradient', default=False, action='store_true')
     parser.add_argument('--q_learning',    dest='q_learning',    default=False, action='store_true')
     parser.add_argument('--render',        dest='render',        default=False, action='store_true')
     return parser.parse_args()
-    
+
 def get_net(env):
     in_dim = np.prod(env.observation_space.shape)
     out = env.action_space.n
@@ -89,4 +89,3 @@ def get_net(env):
             nn.ReLU(),
             nn.Linear(hidden, out),
         )
-
