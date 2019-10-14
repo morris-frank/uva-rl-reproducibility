@@ -2,24 +2,13 @@
 
 In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient in deep Q-learning in different enviroments.
 
-We compared two different reinforcement learning methods in 3 environments.
-Gradient methods have a deep policy which is updated by taking the gradient of the loss function over the weights.
-The full-gradient method is unbiased since it relies only on the real target.
-When using Monte-Carlo we aid our prediction with estimates. Due to these estimats our target is not unbiased anymore, due to that we take the semi-gradient.
-
-For policy we used an epsilon gready policy ...
-Q-learning value funtion
-
-Implemented n-step for 0, 3, 8 and infinite steps.
-
-Experiments of performance of gradient and semi-gradient on e3 environments from the gym library.
-We chose the CartPole as representive of discrete environment.
-Mountain Car for continious environment.
-PacMan as more complex environment with a pixel observation space.
-
 ## Background
+Q-learning is Reinforcement learning method for learning an optimal policy in an given RL enviroment.
+In Q-learning we want to find estimates for the Q-values.
+The Q-values tell us given a state of our actor which action, if taken in this state will have the highest expected reward.
 
 ## Implementation
+For prediciting the Q-values given a state we need an approximation function.
 
 ## Results
 We test our hypothesis in three different enviroments, the CartPole, the Pendulum and PacMan.
