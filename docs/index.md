@@ -7,3 +7,5 @@ In this blog post we want to investigate the effectiveness os using the semi-gra
 ## Implementation
 
 ## Results
+
+{% include plots/CartPole-v0_duration.html %}
