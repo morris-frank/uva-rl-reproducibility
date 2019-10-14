@@ -24,6 +24,10 @@ PacMan:
 ConvNet architecture?
 Training on GPU neccessary.
 
+```bash
+python run.py --env=MsPacman-v0 --seed=11
+```
+
 Cart Pole:
 
 Mountain Car:
