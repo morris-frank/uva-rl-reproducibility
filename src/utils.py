@@ -39,7 +39,7 @@ def write_csv(results, name: str = 'env'):
 
 def load_csv(name: str) -> pd.DataFrame:
     path = os.path.join(os.getcwd(), 'data', f'{name}.csv')
-    return pd.read_csv(name, dialect='unix')
+    return pd.read_csv(path, dialect='unix')
 
 def set_seed(seed: int):
     np.random.seed(seed)

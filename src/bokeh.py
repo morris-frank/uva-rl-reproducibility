@@ -8,19 +8,20 @@ from bokeh.models import Band, ColumnDataSource
 
 import pandas as pd
 import numpy as np
+from typing import List
 
 from .utils import load_csv
 
 
-def plot(env: str, var: str  = 'duration', n_steps = None, ncols:int = 3):
+def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
     """
         env: which enviroment to plot for
         var: which variable to plot against the episodes
         n_steps: list of n steps to plot for
         ncols: numbe rof columns in the output
     """
-    # df = load_csv(env)
-    df = pd.read_csv('data/CartPole-v0.csv', dialect='unix')
+    df = load_csv(env)
+    # df = pd.read_csv('data/CartPole-v0.csv', dialect='unix')
     cnf = {True: {'legend': 'Semi-gradient', 'color': '#66C2A5'},
            False: {'legend': 'Full-gradient', 'color': '#FC8D62'}}
 
