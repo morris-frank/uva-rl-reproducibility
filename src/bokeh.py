@@ -50,7 +50,7 @@ def plot(env: str, var: str  = 'duration', n_steps = None, ncols:int = 3):
     html_standalone = file_html(grid, CDN, f"{env}_{var}")
 
     for html, postfix in zip((html_components, html_standalone), ('', '_standalone')):
-        path = os.path.join(os.getcwd(), 'docs/plots', f'{env}_{var}{postfix}.html')
+        path = os.path.join(os.getcwd(), 'docs/_includes', f'{env}_{var}{postfix}.html')
         print(f'Save plot to {path}')
         with open(path, 'w') as fp:
             fp.write(html)

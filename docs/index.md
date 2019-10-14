@@ -8,4 +8,4 @@ In this blog post we want to investigate the effectiveness os using the semi-gra
 
 ## Results
 
-{% include plots/CartPole-v0_duration.html %}
+{% include CartPole-v0_duration.html %}
