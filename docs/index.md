@@ -8,19 +8,10 @@ In Q-learning we want to find estimates for the Q-values.
 The Q-values tell us given a state of our actor which action, if taken in this state will have the highest expected reward.
 
 When state spaces get too big to represent in a tabular fashion it is natural to move into state value approximations where we try to create a function that, given the features of a state, returns a hopefully good guess of the corresponding value. Several possibilities exist for the construction of this function but we will focus on neural networks that can represent every possible parametric function.
-In order to choose what is a good parametrization, the need for a loss function arises. The goal of function approximation will be therefore to minimize that loss. The mean Squared Value Error, denoted 
-$$
-\bar{VE}(w)
-$$
-is normally used.
-$$
-\bar{VE}(w) = \sum_{s\in S} \mu(s) \left[ v_\pi(s) - \hat{v}(s, w) \right]^2
-$$
+In order to choose what is a good parametrization, the need for a loss function arises. The goal of function approximation will be therefore to minimize that loss. The mean Squared Value Error, denoted $$\bar{VE}(w)$$ is normally used.
+$$\bar{VE}(w) = \sum_{s\in S} \mu(s) \left[ v_\pi(s) - \hat{v}(s, w) \right]^2$$
 PLEASE CITE BISHOP PAGE 199!
-
-
-
-v_\pi(s) and \hat{v}_\pi(s, w) are respectively the true value of s under policy \pi and the predicted or approximated value of s under the parametrization w. \mu(s) is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. Due to the usual impossibility of finding a closed form solution to the minimization of \bar{VE}$$ we turn to gradient based methods specifically to stochastic gradient descent.
+$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. Due to the usual impossibility of finding a closed form solution to the minimization of $$\bar{VE}$$$$ we turn to gradient based methods specifically to stochastic gradient descent.
 
 With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of it's gradient. It's stochastic because we don't calculate the gradient of all the states instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion. 
 
