@@ -62,7 +62,7 @@ def parse_args() -> dict:
     parser.add_argument('--it_at_min', type=int, default=1000, help='iteration from which to use minimum epsilon')
     parser.add_argument('--min_epsilon', type=float, default=0.05, help='minimum epsilon')
     parser.add_argument('--semi_gradient', dest='semi_gradient', default=False, action='store_true')
-    parser.add_argument('--q_learning',    dest='q_learning',    default=False, action='store_true')
+    parser.add_argument('--q_learning',    dest='q_learning',    default=True, action='store_true')
     parser.add_argument('--render',        dest='render',        default=False, action='store_true')
     return parser.parse_args()
 
