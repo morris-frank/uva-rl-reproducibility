@@ -67,7 +67,7 @@ def parse_args() -> dict:
     return parser.parse_args()
 
 def get_net(env):
-    in_dim = np.prod(env.observation_space.shape)
+    in_dim = np.prod(env.observation_space.shape).astype(int)
     out = env.action_space.n
     if env.spec.id == 'MsPacman-v0':
         hidden = 128

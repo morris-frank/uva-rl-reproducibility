@@ -81,6 +81,8 @@ def train(
         # Reset environment
         states, actions, rewards, max_actions = AList(), AList(), AList(), AList()
         states[0] = env.reset()
+        if isinstance(states[0], (np.int64, int)):  # Ugly hack, sry
+            states[0] = [states[0]]
         actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global)
 
         T = np.inf
@@ -92,6 +94,8 @@ def train(
                 env.render()
             if t < T:
                 states[t + 1], rewards[t], done, _ = env.step(actions[t])
+                if isinstance(states[t + 1], (np.int64, int)):
+                    states[t + 1] = [states[t + 1]]
 
                 if done:
                     T = t + 1
