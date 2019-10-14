@@ -10,11 +10,21 @@ from torch.utils.tensorboard import SummaryWriter
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon, write_csv
+from .utils import get_get_epsilon, write_csv, set_seed
 
-def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int, gamma: float,
-          semi_gradient: bool, q_learning: bool, n_memory: int = 1e4, batch_size: int = 64, render: bool = False,
-          get_epsilon: callable = get_get_epsilon(1000, 0.05))\
+def train(
+    approximator: Approximator,
+    env: gym.Env,
+    n_step: int,
+    n_episodes: int,
+    gamma: float,
+    semi_gradient: bool,
+    q_learning: bool,
+    seed: int,
+    n_memory: int = 1e4,
+    batch_size: int = 64,
+    render: bool = False,
+    get_epsilon: callable = get_get_epsilon(1000, 0.05)) \
         -> (np.ndarray, np.ndarray):
     """
 
@@ -31,11 +41,6 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     :param get_epsilon
     :return: the returns for all episodes
     """
-    # Init Pandas Dataframe
-    data = pd.DataFrame()
-    duration_list = []
-    G_list = []
-    loss_list = []
 
     def choose_epsilon_greedy(state, global_it: int, is_q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
@@ -55,6 +60,7 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         else:
             return action
 
+    set_seed(seed)
     i_global = 0
     loss = 0
     n_step += 1  # ARGH
@@ -62,7 +68,11 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
     # Writer will output to ./runs/ directory by default
     writer = SummaryWriter()
     params = {
-        'n_step', n_step,
+        'seed': seed,
+        'gamma': gamma,
+        'n_step': n_step,
+        'semi_gradient': semi_gradient,
+        'alpha': approximator.alpha
     }
     print(params)
 
@@ -106,14 +116,13 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         duration = len(states)
         G = np.sum(rewards)
         stats = {
+            # episode stats
             'episode': i_episode,
             'duration': duration,
             'G': G,
             'loss': loss,
-            'gamma': gamma,
-            'n_step': n_step,
-            'semi_gradient': semi_gradient,
-            'alpha': approximator.alpha
+            # hyper-params
+            **params,
         }
         name = env.spec.id
         writer.add_scalars(name, stats, i_episode)
@@ -121,7 +130,3 @@ def train(approximator: Approximator, env: gym.Env, n_step: int, n_episodes: int
         if i_episode % 10 == 0:
             bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}', ε=f'{get_epsilon(i_global):.2f}')
     # writer.close()
-    data['Duration'] = duration_list
-    data['G'] = G_list
-    data['Loss'] = loss_list
-    return data

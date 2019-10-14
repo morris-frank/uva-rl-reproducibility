@@ -4,7 +4,9 @@ from torch import nn
 import numpy as np
 import argparse
 
-from src import train, Approximator, get_get_epsilon
+from src.utils import get_net, get_get_epsilon
+from src.training import train
+from src.approximator import Approximator
 
 
 def main():
@@ -17,12 +19,9 @@ def main():
     args = parser.parse_args()
 
     env = gym.envs.make(args.env)
-
-    net = nn.Sequential(
-        nn.Linear(np.prod(env.observation_space.shape), 128),
-        nn.ReLU(),
-        nn.Linear(128, env.action_space.n),
-    )
+    in_dim = np.prod(env.observation_space.shape)
+    out = env.action_space.n
+    net = get_net(in_dim, out, args.env)
 
     approximator = Approximator(net, alpha=args.alpha, loss=nn.MSELoss)
     train(approximator, env,
@@ -31,6 +30,7 @@ def main():
           gamma=args.gamma,
           semi_gradient=True,
           q_learning=True,
+          seed=args.seed,
           n_memory=10000,
           batch_size=64,
           render=False,

@@ -15,3 +15,7 @@ python run.py
 tensorboard --logdir ./runs/
 # http://localhost:6006
 ```
+
+### Blog Post
+
+https://morris-frank.github.io/uva-rl-reproducibility/
