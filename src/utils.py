@@ -49,8 +49,10 @@ def set_seed(seed: int):
 
 def parse_args() -> dict:
     parser = argparse.ArgumentParser(description='play RL games')
-    parser.add_argument('--env_id', default='CartPole-v0', help='https://gym.openai.com/envs/')
-    parser.add_argument('--seed', type=int, default=0, help='random seed')
+    parser.add_argument('--env_id', default='CartPole-v0', help='https://gym.openai.com/envs/')  # run
+    parser.add_argument('--env_ids', nargs='+', help='list of env ids', required=False)          # run_envs
+    parser.add_argument('--seed', type=int, default=0, help='random seed')           # run
+    parser.add_argument('--num_seeds', type=int, default=5, help='number of seeds')  # run_envs
     parser.add_argument('--alpha', type=float, default=1e-3, help='learning rate')
     parser.add_argument('--gamma', type=float, default=0.8, help='reward decay')
     parser.add_argument('--n_episodes', type=int, default=100, help='number of episodes to play')
