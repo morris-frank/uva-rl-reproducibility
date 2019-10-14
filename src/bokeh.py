@@ -45,7 +45,7 @@ def plot(env: str, var: str  = 'duration', n_steps = None, ncols:int = 3):
             fig.add_layout(band)
         figs.append(fig)
 
-    grid = gridplot(figs, ncols=ncols)
+    grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_width')
     html_components = '\n'.join(components(grid))
     html_standalone = file_html(grid, CDN, f"{env}_{var}")
 
