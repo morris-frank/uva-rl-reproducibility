@@ -4,7 +4,7 @@ from torch import nn
 import numpy as np
 import argparse
 
-from src import train, Approximator
+from src import train, Approximator, get_get_epsilon
 
 
 def main():
@@ -33,7 +33,8 @@ def main():
           q_learning=True,
           n_memory=10000,
           batch_size=64,
-          render=False)
+          render=False,
+          get_epsilon=get_get_epsilon(1000, 0.05))
 
 
 if __name__ == "__main__":
