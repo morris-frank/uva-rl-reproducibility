@@ -40,5 +40,5 @@ ConvNet architecture?
 Training on GPU neccessary.
 
 ```bash
-python run.py --env=MsPacman-v0 --seed=11
+python run.py --env_id=MsPacman-v0 --seed=11
 ```

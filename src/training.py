@@ -15,17 +15,17 @@ from .utils import get_get_epsilon, write_csv, set_seed
 def train(
     approximator: Approximator,
     env: gym.Env,
-    n_step: int,
-    n_episodes: int,
-    gamma: float,
-    semi_gradient: bool,
-    q_learning: bool,
-    seed: int,
+    n_step: int = 2,
+    n_episodes: int = 10,
+    gamma: float = 0.8,
+    semi_gradient: bool = True,
+    q_learning: bool = True,
+    seed: int = 0,
     n_memory: int = 1e4,
     batch_size: int = 64,
     render: bool = False,
-    get_epsilon: callable = get_get_epsilon(1000, 0.05)) \
-        -> (np.ndarray, np.ndarray):
+    get_epsilon: callable = get_get_epsilon(1000, 0.05),
+    **kwargs) -> (np.ndarray, np.ndarray):
     """
 
     :param approximator: the value function approximator
