@@ -131,6 +131,5 @@ def train(
         name = env.spec.id
         writer.add_scalars(name, stats, i_episode)
         write_csv([stats], name)
-        if i_episode % 10 == 0:
-            bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}', ε=f'{get_epsilon(i_global):.2f}')
+        bar.set_postfix(G=f'{G:02}', len=f'{duration:02}', loss=f'{loss:.2f}', ε=f'{get_epsilon(i_global):.2f}')
     # writer.close()

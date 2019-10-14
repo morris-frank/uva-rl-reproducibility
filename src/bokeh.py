@@ -30,7 +30,7 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
-        fig = figure(title=f'{var} of TD({n_step - 1})')
+        fig = figure(title=f'{var} of TD({n_step})')
         for semi in (True, False):
             mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std']})
 
