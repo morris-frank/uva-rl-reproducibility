@@ -11,14 +11,14 @@ The Q-values tell us given a state of our actor which action, if taken in this s
 For prediciting the Q-values given a state we need an approximation function.
 
 ## Results
-We test our hypothesis in three different enviroments, the CartPole, the Pendulum and PacMan.
+We test our hypothesis in three different enviroments, the CartPole, the Acrobot and PacMan.
 
 ### Cart Pole
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
 </video>
 
-Our first experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) enviroment from the OpenAI Gym.
+Our first experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) enviroment from the OpenAI gym.
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning we test with n-Steps: $$n\in [0, 3, 8]$$.
 $$\gamma$$ is fixed to $$0.8$$.
@@ -32,7 +32,12 @@ The runs with using semi-gradient and using full-gradient are color-coded.
 {% include CartPole-v0_duration.html %}
 </figure>
 
-### Pendulum
+### Acrobot
+<video autoplay loop controls>
+    <source src="acrobot.mp4" type="video/mp4">
+</video>
+
+Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) enviroment from the OpenAI gym.
 
 ### PacMan
 PacMan:

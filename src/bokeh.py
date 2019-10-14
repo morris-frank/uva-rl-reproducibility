@@ -19,8 +19,8 @@ def plot(env: str, var: str  = 'duration', n_steps = None, ncols:int = 3):
         n_steps: list of n steps to plot for
         ncols: numbe rof columns in the output
     """
-    df = load_csv(env)
-    # df = pd.read_csv('data/CartPole-v0.csv', dialect='unix')
+    # df = load_csv(env)
+    df = pd.read_csv('data/CartPole-v0.csv', dialect='unix')
     cnf = {True: {'legend': 'Semi-gradient', 'color': '#66C2A5'},
            False: {'legend': 'Full-gradient', 'color': '#FC8D62'}}
 
@@ -45,7 +45,7 @@ def plot(env: str, var: str  = 'duration', n_steps = None, ncols:int = 3):
             fig.add_layout(band)
         figs.append(fig)
 
-    grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_width')
+    grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_both')
     html_components = '\n'.join(components(grid))
     html_standalone = file_html(grid, CDN, f"{env}_{var}")
 
