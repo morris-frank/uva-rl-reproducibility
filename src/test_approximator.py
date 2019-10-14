@@ -1,15 +1,16 @@
 import numpy as np
 import torch
+from torch import nn
 from .approximator import Approximator
 
 def test_approximator():
     I = 3
     H = 2
     O = 4
-    net = torch.nn.Sequential(
-            torch.nn.Linear(I, H),
-            torch.nn.ReLU(),
-            torch.nn.Linear(H, O),
+    net = nn.Sequential(
+            nn.Linear(I, H),
+            nn.ReLU(),
+            nn.Linear(H, O),
         )
     a = Approximator(net)
 

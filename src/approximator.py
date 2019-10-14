@@ -1,8 +1,8 @@
 import torch
-import numpy as np
+from torch import nn
 
-class Approximator(torch.nn.Module):
-    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=torch.nn.SmoothL1Loss, device=torch.device("cpu")):
+class Approximator(nn.Module):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device("cpu")):
         """
 
         :param net: The sequential network definition
