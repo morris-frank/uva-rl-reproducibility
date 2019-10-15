@@ -33,16 +33,19 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
         fig = figure(title=f'{var} of TD({n_step - 1})')
         for semi in (True, False):
             mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std']})
-
-            # Plot the mean line
-            fig.line(mean_df.index, mean_df[var]['mean'], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'])
+            # Smooth the curves
+            mean_df = mean_df.rolling(20).mean()
+            mean_df = mean_df.fillna(0)
 
             # Plot the std band
             mean_df['upper'] = mean_df[var]['mean'] + mean_df[var]['std'] / 2
             mean_df['lower'] = mean_df[var]['mean'] - mean_df[var]['std'] / 2
+
+            # Plot the mean line
+            fig.line(mean_df.index, mean_df[var]['mean'], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'], line_width=2)
             source = ColumnDataSource(mean_df)
             band = Band(base='episode', lower='lower_', upper='upper_', source=source, level='underlay',
-                        fill_alpha=.2, line_width=0, fill_color=cnf[semi]['color'])
+                        fill_alpha=.1, line_width=0, fill_color=cnf[semi]['color'])
             fig.add_layout(band)
         figs.append(fig)
 
