@@ -76,6 +76,11 @@ For prediciting the Q-values given a state we need an approximation function.
 ## Results
 We test our hypothesis in three different enviroments, the CartPole, the Acrobot and PacMan.
 
+The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive it did not outperform semi-gradient.
+This might be due two reasons. First being the time spend training on each environment. Most games only reach the final reward after many steps. To avoid infinite episodes a maximum has been set to terminate such episodes. This leads to that the agent has little episodes where he reaches the final reward and eventually does not learn how to play the game. The solution to this is to increment the number of episodes, in the case of CartPole and Acrobot $100$ and $30$ for PacMan.
+The second and more theoretical reason is, that by using Q-learning we already use a self-referential bootstraping approach. Thus taking the full-gradient on the "real" Targed is still estiamtion biased as is the semi-gradient. This concludes that both methods use a very similar approach what explains the similarity in our results.
+
+
 ### Cart Pole
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
@@ -103,6 +108,11 @@ The runs with using semi-gradient and using full-gradient are color-coded.
 Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) enviroment from the OpenAI gym.
 
 ### PacMan
+VIDEO
+PLOTS
+
+To solve the PacMan game with the displayed pixels as observation space a Convolutional Neural Network (CNN) is required. We opted for a simple architecture due to limited computational resources.
+The CNN has 
 PacMan:
 ConvNet architecture?
 Training on GPU neccessary.
