@@ -30,7 +30,7 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
-        fig = figure(title=f'{var} of TD({n_step})')
+        fig = figure(title=f'{var} of TD({n_step - 1})')
         for semi in (True, False):
             mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std']})
 
@@ -38,8 +38,8 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
             fig.line(mean_df.index, mean_df[var]['mean'], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'])
 
             # Plot the std band
-            mean_df['upper'] = mean_df[var]['mean'] + mean_df[var]['std']
-            mean_df['lower'] = mean_df[var]['mean'] - mean_df[var]['std']
+            mean_df['upper'] = mean_df[var]['mean'] + mean_df[var]['std'] / 2
+            mean_df['lower'] = mean_df[var]['mean'] - mean_df[var]['std'] / 2
             source = ColumnDataSource(mean_df)
             band = Band(base='episode', lower='lower_', upper='upper_', source=source, level='underlay',
                         fill_alpha=.2, line_width=0, fill_color=cnf[semi]['color'])
