@@ -1,5 +1,6 @@
 import numpy as np
 import gym
+from gym.spaces import Discrete
 import random
 import pandas as pd
 from tqdm import trange
@@ -76,13 +77,17 @@ def train(
     }
     print(params)
 
+    is_discrete = isinstance(env.observation_space, Discrete)
+    def one_hot(s):
+        return np.eye(env.observation_space.n)[s:s+1].flatten()
+
     bar = trange(n_episodes, desc=env.spec.id)
     for i_episode in bar:
         # Reset environment
         states, actions, rewards, max_actions = AList(), AList(), AList(), AList()
         states[0] = env.reset()
-        if isinstance(states[0], (np.int64, int)):  # Ugly hack, sry
-            states[0] = [states[0]]
+        if is_discrete:
+            states[0] = one_hot(states[0])
         actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global)
 
         T = np.inf
@@ -94,8 +99,8 @@ def train(
                 env.render()
             if t < T:
                 states[t + 1], rewards[t], done, _ = env.step(actions[t])
-                if isinstance(states[t + 1], (np.int64, int)):
-                    states[t + 1] = [states[t + 1]]
+                if is_discrete:
+                    states[t + 1] = one_hot(states[t + 1])
 
                 if done:
                     T = t + 1

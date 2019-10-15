@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
+from gym.spaces import Discrete
 
 
 class Lambda(nn.Module):
@@ -67,7 +68,10 @@ def parse_args() -> dict:
     return parser.parse_args()
 
 def get_net(env):
-    in_dim = np.prod(env.observation_space.shape).astype(int)
+    if isinstance(env.observation_space, Discrete):
+        in_dim = env.observation_space.n
+    else:
+        in_dim = np.prod(env.observation_space.shape).astype(int)
     out = env.action_space.n
     if env.spec.id == 'MsPacman-v0':
         hidden = 128
