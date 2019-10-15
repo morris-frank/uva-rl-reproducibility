@@ -13,7 +13,7 @@ from typing import List
 from .utils import load_csv
 
 
-def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
+def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, win:int = 20):
     """
         env: which enviroment to plot for
         var: which variable to plot against the episodes
@@ -30,11 +30,11 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
-        fig = figure(title=f'{var} of TD({n_step - 1})')
+        fig = figure(title=f'{var} of TD({n_step - 1})', active_scroll='wheel_zoom')
         for semi in (True, False):
             mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std']})
             # Smooth the curves
-            mean_df = mean_df.rolling(20).mean()
+            mean_df = mean_df.rolling(win, min_periods=1).mean()
             mean_df = mean_df.fillna(0)
 
             # Plot the std band
@@ -49,7 +49,7 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3):
             fig.add_layout(band)
         figs.append(fig)
 
-    grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_both')
+    grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_both', toolbar_location='below')
     html_components = '\n'.join(components(grid))
     html_standalone = file_html(grid, CDN, f"{env}_{var}")
 
