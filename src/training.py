@@ -7,11 +7,12 @@ from tqdm import trange
 from itertools import product, count
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from pdb import set_trace
 
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon, write_csv, set_seed
+from .utils import get_get_epsilon, write_csv, set_seed, encode_action, one_hot_space
 
 def train(
     approximator: Approximator,
@@ -43,15 +44,22 @@ def train(
     :return: the returns for all episodes
     """
 
-    def choose_epsilon_greedy(state, global_it: int, is_q_learning=None):
+    def choose_epsilon_greedy(state, global_it: int, env, is_q_learning=None):
         """Chooses the next action from the current Q-network with ε.greedy.
-
-        Returns action, max_action (the greedy action)"""
+        :param state
+        :param global_it
+        :param env
+        :param is_q_learning
+        :return: action, max_action (the greedy action)
+        """
         if state is None:
             return None
-        max_action = torch.argmax(approximator(state)).item()
+        s = torch.stack([state])
+        action_probs = approximator.forward(s)
+        max_action_int = torch.argmax(action_probs).item()  # can I get that scalar from this tensor?
+        max_action = encode_action(max_action_int, env.action_space)
         if np.random.random() < get_epsilon(global_it):
-            action = np.random.randint(env.action_space.n)
+            action = env.action_space.sample()
         else:
             action = max_action
         if is_q_learning is None:
@@ -76,22 +84,18 @@ def train(
         'alpha': approximator.alpha
     }
     print(params)
-
-    is_discrete = isinstance(env.observation_space, Discrete)
-    def one_hot(s):
-        return np.eye(env.observation_space.n)[s:s+1].flatten()
-
+    obs = env.observation_space
     bar = trange(n_episodes, desc=env.spec.id)
     for i_episode in bar:
         # Reset environment
         states, actions, rewards, max_actions = AList(), AList(), AList(), AList()
         states[0] = env.reset()
-        if is_discrete:
-            states[0] = one_hot(states[0])
-        actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global)
+        states[0] = one_hot_space(states[0], obs)
+        actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global, env, None)
 
         T = np.inf
         _n_step = n_step
+        # set_trace()
         for t in count():
             i_global += 1
             τ = t - _n_step + 1
@@ -99,27 +103,26 @@ def train(
                 env.render()
             if t < T:
                 states[t + 1], rewards[t], done, _ = env.step(actions[t])
-                if is_discrete:
-                    states[t + 1] = one_hot(states[t + 1])
+                states[t + 1] = one_hot_space(states[t + 1], obs)
 
                 if done:
                     T = t + 1
-                    _n_step = T
+                    # _n_step = T  # only happens if n_step > T, needed in Monte Carlo but breaks things in games done after 1 time-step
                 else:
-                    actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[t + 1], i_global)
+                    actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[t + 1], i_global, env, None)
             if τ >= 0:
                 G = np.sum(rewards[τ:t+1] * np.power(gamma, range(len(rewards[τ:t+1]))))
-                experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]
+                experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]  # using list instead of tuple to append to it later
                 memory.push(experience)
 
                 # Start training when we have enough experience!
                 if len(memory) > batch_size:
                     # SAMPLING:
                     samples = memory.sample(batch_size)
-                    samples = [exp + [choose_epsilon_greedy(exp[3], i_global, q_learning)] for exp in samples]
+                    samples = [exp + [choose_epsilon_greedy(exp[3], i_global, env, q_learning)] for exp in samples]
                     # Now samples are (G, state of τ, action of τ, state of t, action of t)
 
-                    loss = approximator.batch_train(samples, gamma**n_step, semi_gradient)
+                    loss = approximator.batch_train(samples, gamma**n_step, env.action_space, semi_gradient)
             if τ == T - 1:
                 break
         duration = len(states)
