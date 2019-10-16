@@ -1,10 +1,11 @@
 import gym
 from torch import nn
-from src import get_net, get_get_epsilon, parse_args, train, Approximator
+from src import get_net, get_get_epsilon, parse_args, train, Approximator, set_seed
 
 
 def main():
     args = parse_args()
+    set_seed(args.seed)
     env = gym.envs.make(args.env_id)
     net = get_net(env)
     approximator = Approximator(net, alpha=args.alpha, loss=nn.MSELoss)

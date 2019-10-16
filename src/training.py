@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon, write_csv, set_seed
+from .utils import get_get_epsilon, write_csv
 
 def train(
     approximator: Approximator,
@@ -21,7 +21,6 @@ def train(
     gamma: float = 0.8,
     semi_gradient: bool = True,
     q_learning: bool = True,
-    seed: int = 0,
     n_memory: int = 1e4,
     batch_size: int = 64,
     render: bool = False,
@@ -61,7 +60,6 @@ def train(
         else:
             return action
 
-    set_seed(seed)
     i_global = 0
     loss = 0
     n_step += 1  # ARGH
@@ -69,7 +67,6 @@ def train(
     # Writer will output to ./runs/ directory by default
     writer = SummaryWriter()
     params = {
-        'seed': seed,
         'gamma': gamma,
         'n_step': n_step,
         'semi_gradient': semi_gradient,
