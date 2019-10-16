@@ -12,7 +12,7 @@ from pdb import set_trace
 from .alist import AList
 from .memory import Memory
 from .approximator import Approximator
-from .utils import get_get_epsilon, write_csv, one_hot_space
+from .utils import get_get_epsilon, write_csv, one_hot_space, encode_action
 
 def train(
     approximator: Approximator,
