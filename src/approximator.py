@@ -1,5 +1,7 @@
 import torch
 from torch import nn
+from .utils import decode_action
+# from pdb import set_trace
 
 class Approximator(nn.Module):
     def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
@@ -24,10 +26,10 @@ class Approximator(nn.Module):
         :param x:
         :return:
         """
-        x = torch.FloatTensor(x).to(self.device)
+        # set_trace()
         return self.net(x)
 
-    def batch_train(self, samples: list, gamma: float, semi_gradient: bool = True):
+    def batch_train(self, samples: list, gamma: float, action_space, semi_gradient: bool = True):
         """
         Train the network with the batch of experience samples
         :param samples: the list of samples, each sample is (G, start state, start action, last state, last action)
@@ -46,14 +48,18 @@ class Approximator(nn.Module):
         # Compute the actual discounted returns:
         for i, (state, action) in enumerate(zip(t_states, t_actions)):
             if action is not None:
-                Gs[i] = Gs[i] + gamma * self.forward(state)[action].item()
+                act = decode_action(action, action_space)
+                s = torch.stack([state])
+                Gs[i] += gamma * self.forward(s)[0][act].item()
 
         Gs = torch.tensor(Gs, dtype=torch.float)
-        τ_states = torch.FloatTensor(τ_states)
+        # τ_states = torch.FloatTensor(τ_states)
         τ_actions = torch.tensor(τ_actions, dtype=torch.int64)
 
         torch.set_grad_enabled(True)
-        target_q_vals = self(τ_states)
+        s = torch.stack(τ_states)
+        target_q_vals = self.forward(s)
+        τ_actions = [decode_action(action, action_space) for action in τ_actions]
         target = target_q_vals[torch.arange(target_q_vals.size(0)), τ_actions]
 
         loss = self.loss_function(Gs.to(self.device), target.to(self.device))

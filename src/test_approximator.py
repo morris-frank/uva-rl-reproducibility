@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from torch import nn
 from .approximator import Approximator
+import gym.spaces
 
 def test_approximator():
     I = 3
@@ -15,13 +16,14 @@ def test_approximator():
     a = Approximator(net)
 
     # len: I
-    x = range(I)
-    y = a.forward(x)
-    # print(y)
+    xs = torch.FloatTensor(range(I))
+    ys = a.forward(xs)
+    # print(ys)
 
+    action_space = gym.spaces.Discrete(3)
     G = 1.
     # len: I
-    state = [0., 1., 2.]
+    state = torch.FloatTensor([0., 1., 2.])
     state_ = None
     action = 1
     action_ = None
@@ -30,6 +32,6 @@ def test_approximator():
         Gsasa,
         Gsasa,
     ]
-    loss = a.batch_train(samples, gamma=0.9, semi_gradient=False)
+    loss = a.batch_train(samples, gamma=0.9, action_space=action_space, semi_gradient=False)
     # print(loss)
     # assert
