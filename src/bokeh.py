@@ -32,17 +32,22 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, w
         step_df = df[df.n_step == n_step]
         fig = figure(title=f'{var} of TD({n_step - 1})', active_scroll='wheel_zoom')
         for semi in (True, False):
-            mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std']})
+            # _df = step_df[df.semi_gradient == semi]
+            # fig.circle(_df.episode, _df[var], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'])
+            mean_df = step_df[df.semi_gradient == semi].groupby(['episode']).agg({var: ['mean', 'std', 'min', 'max']})
+
             # Smooth the curves
             mean_df = mean_df.rolling(win, min_periods=1).mean()
             mean_df = mean_df.fillna(0)
 
+            # Plot the mean line
+            fig.line(mean_df.index, mean_df[var]['mean'], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'], line_width=2)
+
             # Plot the std band
             mean_df['upper'] = mean_df[var]['mean'] + mean_df[var]['std'] / 2
             mean_df['lower'] = mean_df[var]['mean'] - mean_df[var]['std'] / 2
-
-            # Plot the mean line
-            fig.line(mean_df.index, mean_df[var]['mean'], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'], line_width=2)
+            # mean_df['upper'] = mean_df[var]['max']
+            # mean_df['lower'] = mean_df[var]['min']
             source = ColumnDataSource(mean_df)
             band = Band(base='episode', lower='lower_', upper='upper_', source=source, level='underlay',
                         fill_alpha=.1, line_width=0, fill_color=cnf[semi]['color'])

@@ -13,7 +13,7 @@ $$\bar{VE}(w) = \sum_{s\in S} \mu(s) \left[ v_\pi(s) - \hat{v}(s, w) \right]^2$$
 PLEASE CITE BISHOP PAGE 199!
 $$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. Due to the usual impossibility of finding a closed form solution to the minimization of $$\bar{VE}$$$$ we turn to gradient based methods specifically to stochastic gradient descent.
 
-With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of it's gradient. It's stochastic because we don't calculate the gradient of all the states instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion. 
+With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of it's gradient. It's stochastic because we don't calculate the gradient of all the states instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion.
 
 ## Environments
 
@@ -76,6 +76,13 @@ For prediciting the Q-values given a state we need an approximation function.
 ## Results
 We test our hypothesis in three different enviroments, the CartPole, the Acrobot and PacMan.
 
+
+### FrozenLake
+
+<figure>
+{% include FrozenLake-v0_G.html %}
+</figure>
+
 ### Cart Pole
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
@@ -101,6 +108,10 @@ The runs with using semi-gradient and using full-gradient are color-coded.
 </video>
 
 Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) enviroment from the OpenAI gym.
+
+<figure>
+{% include Acrobot-v1_G.html %}
+</figure>
 
 ### PacMan
 PacMan:
