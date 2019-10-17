@@ -15,7 +15,7 @@ Q_\pi(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
 G = \sum_{i=0}^{n} \gamma^i r_{t+i}
 $$
 
-A bigger n reduces bias of the convergence (as we use more actual rewards) and a reduces variance due to the expectation over possible trajectories requiring less samples to converge. We notice that if n is equal to infinity then we always reach the end of the episode and we have a Monte Carlo algorithm. 
+A bigger n reduces bias of the convergence (as we use more actual rewards) and a reduces variance due to the expectation over possible trajectories requiring less samples to converge. We notice that if n is equal to infinity then we always reach the end of the episode and we have a Monte Carlo algorithm.
 
 Although we don't have any convergence guarantees for the function approximation case we can still make use of them for a loss function:
 
@@ -26,20 +26,20 @@ $$
 
 PLEASE CITE BISHOP PAGE 199!
 
-$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. 
+$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment.
 
 Due to the usual impossibility of finding a closed form solution to the minimization of $$L$$ we turn to gradient based methods specifically to stochastic gradient descent.
 
 With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of its gradient. It's stochastic because we don't calculate the full gradient of all the states, instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion.
 
-We can see that the gradient of our loss is 
+We can see that the gradient of our loss is
 
 $$
 \frac{\partial}{\partial w} L = E_\tau[2 [q_\pi(s,a) - \hat{q}(s,a,w))] \nabla \hat{q}(s,a,w))]
 $$
 
 We assume that the target $$q_\pi(s,a)$$ is independent of the parametrization $$w$$ which is not true as unless we reach the final state we still have to calculate the q value of the final state, action using $$w$$. Because of that this gradient is called semi-gradient.
-Without this assumption we would calcutate the full gradient. 
+Without this assumption we would calcutate the full gradient.
 
 Experience replay is used as a mechanism that smooths the training distribution and reduces correlation between used samples which is a assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters oscilation or divergence. PLEASE CITE DQN PAPER.
 
@@ -145,6 +145,24 @@ Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environme
 
 <figure>
 {% include Acrobot-v1_G.html %}
+</figure>
+
+
+### Algorithms
+<figure>
+{% include Copy-v0_G.html %}
+</figure>
+<figure>
+{% include DuplicatedInput-v0_G.html %}
+</figure>
+<figure>
+{% include RepeatCopy-v0_G.html %}
+</figure>
+<figure>
+{% include Reverse-v0_G.html %}
+</figure>
+<figure>
+{% include ReversedAddition-v0_G.html %}
 </figure>
 
 ### PacMan
