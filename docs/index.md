@@ -166,11 +166,9 @@ Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environme
     <source src="MsPacman.mp4" type="video/mp4">
 </video>
 
-<!--
 <figure>
-{% include MsPacman-v0_G.html %}
+{% <!--include MsPacman-v0_G.html--> %}
 </figure>
--->
 
 Ms PacMan is one of the Atari games contained in Gym. It has both a version played using RAM as input, as well as one using pixels as input. We used the latter here. This offers us an environment with discrete action and observation spaces, like FrozenLake, but characterized by a relatively large observation space compared to that of our other games.
 To solve this game with the displayed pixels as observation space, a Convolutional Neural Network (CNN) is required. We opted for a simple architecture due to limited computational resources.
