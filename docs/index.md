@@ -149,18 +149,27 @@ Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environme
 
 
 ### Algorithms
+#### Copy
 <figure>
 {% include Copy-v0_G.html %}
 </figure>
+
+#### DuplicatedInput
 <figure>
 {% include DuplicatedInput-v0_G.html %}
 </figure>
+
+#### RepeatCopy
 <figure>
 {% include RepeatCopy-v0_G.html %}
 </figure>
+
+#### Reverse
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
+
+#### ReversedAddition
 <figure>
 {% include ReversedAddition-v0_G.html %}
 </figure>
