@@ -24,7 +24,9 @@ L = \sum_s \mu(s) [q_\pi(s,a) - \hat{q}(s,a,w))]^2
 q_(s,a) = E_\tau [G + \gamma^{n+1} q_pi(s_{t+n}, a_{t+n})]
 $$
 
+<!--
 PLEASE CITE BISHOP PAGE 199!
+-->
 
 $$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. 
 
