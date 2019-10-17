@@ -15,6 +15,17 @@ $$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ 
 
 With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of it's gradient. It's stochastic because we don't calculate the gradient of all the states instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion.
 
+Experience replay is used as a mechanism that smooths the training distribution and reduces correlation between used samples which is a assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters oscilation or divergence. PLEASE CITE DQN PAPER.
+
+$$\epsilon$$ decay is also used as an exploration strategy. It employs an $$\epsilon$$ greedy strategy but with a linear decay of its parameter. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as 0.05. This allows for more exploration in the beginning, which is extremely necessairy in the case of scarce rewards, and more exploitation later on, allowing for better convergence of the state action values using a closer to optimal policy.
+
+If you don't remember your RL classes it's also important to talk about n-step TD learning. The ammount 
+
+Extending the $$\bar{VE}(w)$$ to a control algorith (that learns policies) we can reach a Q learning algorithm whose parameters updates, under a gradient descent algorithm, would be:
+
+$$w_{t+1} = w_t + \alpha\left[ R_{t+1} \right]
+
+
 ## Environments
 
 We thought about different environment properties to compare by, and came up with the following:
