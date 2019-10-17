@@ -114,7 +114,7 @@ Our reinforcement learning agent consists of a semi-gradient Q-learning agent, w
 
 ## Results
 
-We test our hypothesis in a couple of different enviroments: [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/), [Ms PacMan](https://gym.openai.com/envs/MsPacman-v0/), and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
+We test our hypothesis in a couple of different enviroments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/), [Ms PacMan](https://gym.openai.com/envs/MsPacman-v0/), and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive, it did not outperform semi-gradient.
 This might be due two reasons.
@@ -122,6 +122,8 @@ This might be due two reasons.
 - The second and more theoretical reason is that by using Q-learning, we already use a self-referential bootstrapping approach. Thus taking the full-gradient on the 'real' target is still an estimation biased just like the semi-gradient. This means that both methods use a very similar approach, which explains the similarity in our results.
 
 ### FrozenLake
+
+FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
 
 <figure>
 {% include FrozenLake-v0_G.html %}
@@ -132,7 +134,7 @@ This might be due two reasons.
     <source src="cartpole.mp4" type="video/mp4">
 </video>
 
-Our first experiment is using [OpenAI gym](http://gym.openai.com/)'s [CartPole-v0](https://gym.openai.com/environments/CartPole-v0/) enviroment.
+Our first experiment is using [OpenAI gym](http://gym.openai.com/)'s popular [CartPole-v0](https://gym.openai.com/environments/CartPole-v0/) enviroment, featuring a continuous observation space, yet a discrete action space.
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
 $$\gamma$$ is fixed to $$0.8$$.
@@ -146,13 +148,13 @@ The runs using semi-gradient and using full-gradient are color-coded.
 {% include CartPole-v0_duration.html %}
 </figure>
 
-### [Acrobot](https://gym.openai.com/envs/Acrobot-v0/)
+### [Acrobot](https://gym.openai.com/envs/Acrobot-v1/)
 
 <video autoplay loop controls>
     <source src="acrobot.mp4" type="video/mp4">
 </video>
 
-Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) enviroment from the OpenAI gym.
+Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) enviroment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
 
 <figure>
 {% include Acrobot-v1_G.html %}
@@ -170,7 +172,8 @@ Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environme
 </figure>
 -->
 
-To solve the PacMan game with the displayed pixels as observation space, a Convolutional Neural Network (CNN) is required. We opted for a simple architecture due to limited computational resources.
+Ms PacMan is one of the Atari games contained in Gym. It has both a version played using RAM as input, as well as one using pixels as input. We used the latter here. This offers us an environment with discrete action and observation spaces, like FrozenLake, but characterized by a relatively large observation space compared to that of our other games.
+To solve this game with the displayed pixels as observation space, a Convolutional Neural Network (CNN) is required. We opted for a simple architecture due to limited computational resources.
 The CNN consists of the following (2d) layers:
 - batch-norm
 - convolution
@@ -185,31 +188,35 @@ The CNN consists of the following (2d) layers:
 Training on GPU neccessary.
 -->
 
-### [Copy](https://gym.openai.com/envs/Copy-v0/)
+### [Algorithmic environments](https://gym.openai.com/envs/#algorithmic)
+
+The algorithmic environments are somewhat simpler, and similar in nature. Like FrozenLake and MsPacman, they feature discrete action and observation spaces.
+
+#### [Copy](https://gym.openai.com/envs/Copy-v0/)
 
 <figure>
 {% include Copy-v0_G.html %}
 </figure>
 
-### [DuplicatedInput](https://gym.openai.com/envs/DuplicatedInput-v0/)
+#### [DuplicatedInput](https://gym.openai.com/envs/DuplicatedInput-v0/)
 
 <figure>
 {% include DuplicatedInput-v0_G.html %}
 </figure>
 
-### [RepeatCopy](https://gym.openai.com/envs/RepeatCopy-v0/)
+#### [RepeatCopy](https://gym.openai.com/envs/RepeatCopy-v0/)
 
 <figure>
 {% include RepeatCopy-v0_G.html %}
 </figure>
 
-### [Reverse](https://gym.openai.com/envs/Reverse-v0/)
+#### [Reverse](https://gym.openai.com/envs/Reverse-v0/)
 
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
 
-### [ReversedAddition](https://gym.openai.com/envs/ReversedAddition-v0/)
+#### [ReversedAddition](https://gym.openai.com/envs/ReversedAddition-v0/)
 
 <figure>
 {% include ReversedAddition-v0_G.html %}
