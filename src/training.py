@@ -89,6 +89,7 @@ def train(
         states[0] = env.reset()
         states[0] = one_hot_space(states[0], obs)
         actions[0], max_actions[0] = choose_epsilon_greedy(states[0], i_global, env, None)
+        experiences = []
 
         T = np.inf
         _n_step = n_step
@@ -107,23 +108,30 @@ def train(
                     # _n_step = T  # only happens if n_step > T, needed in Monte Carlo but breaks things in games done after 1 time-step
                 else:
                     actions[t + 1], max_actions[t + 1] = choose_epsilon_greedy(states[t + 1], i_global, env, None)
-            if τ >= 0:
-                G = np.sum(rewards[τ:t+1] * np.power(gamma, range(len(rewards[τ:t+1]))))
-                experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]  # using list instead of tuple to append to it later
-                memory.push(experience)
+            if semi_gradient:
+                if τ >= 0:
+                    G = np.sum(rewards[τ:t+1] * np.power(gamma, range(len(rewards[τ:t+1]))))
+                    experience = [G, states[τ], actions[τ], states[t + 1] if not done else None]  # using list instead of tuple to append to it later
+                    memory.push(experience)
 
-                # Start training when we have enough experience!
-                if len(memory) > batch_size:
-                    # SAMPLING:
-                    samples = memory.sample(batch_size)
-                    samples = [exp + [choose_epsilon_greedy(exp[3], i_global, env, q_learning)] for exp in samples]
-                    # Now samples are (G, state of τ, action of τ, state of t, action of t)
+                    # Start training when we have enough experience!
+                    if len(memory) > batch_size:
+                        # SAMPLING:
+                        samples = memory.sample(batch_size)
+                        samples = [exp + [choose_epsilon_greedy(exp[3], i_global, env, q_learning)] for exp in samples]
+                        # Now samples are (G, state of τ, action of τ, state of t, action of t)
 
-                    loss = approximator.batch_train(samples, gamma**n_step, env.action_space, semi_gradient)
+                        loss = approximator.batch_train(samples, gamma**n_step, env.action_space, semi_gradient)
+            else: # MC
+                G = np.sum(rewards * np.power(gamma, range(len(rewards))))
+                experience = [G, states[t], actions[t], states[t + 1] if not done else None]
+                experiences.append(experience)
             if τ == T - 1:
                 break
         duration = len(states)
         G = np.sum(rewards)
+        if not semi_gradient: # MC
+            loss = approximator.batch_train(experiences, gamma, env.action_space, semi_gradient)
         stats = {
             # episode stats
             'episode': i_episode,

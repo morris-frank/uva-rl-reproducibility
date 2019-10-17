@@ -4,7 +4,7 @@ from .utils import decode_action
 # from pdb import set_trace
 
 class Approximator(nn.Module):
-    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
+    def __init__(self, net, alpha: float = 0.01, optimizer=torch.optim.Adam, loss=nn.SmoothL1Loss, device=torch.device('cpu')):
         """
 
         :param net: The sequential network definition
