@@ -3,27 +3,44 @@
 In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient in deep Q-learning in different enviroments.
 
 ## Background
-Q-learning is Reinforcement learning method for learning an optimal policy in an given RL enviroment.
-In Q-learning we want to find estimates for the Q-values.
-The Q-values tell us given a state of our actor which action, if taken in this state will have the highest expected reward.
+When state spaces get too big to represent in a tabular fashion it is natural to move into action state value approximations where we try to create a function that, given the features of a state, returns a hopefully good guess of the corresponding actions values. Several possibilities exist for the construction of this function but we will focus on neural networks that can represent every possible parametric function.
+When trying to get a good parametrization the need for a loss function arises. The goal of function approximation will be therefore to minimize that loss. Here we turn to the Bellman equations and n-step TD learning to get a good loss function.
 
-When state spaces get too big to represent in a tabular fashion it is natural to move into state value approximations where we try to create a function that, given the features of a state, returns a hopefully good guess of the corresponding value. Several possibilities exist for the construction of this function but we will focus on neural networks that can represent every possible parametric function.
-In order to choose what is a good parametrization, the need for a loss function arises. The goal of function approximation will be therefore to minimize that loss. The mean Squared Value Error, denoted $$\bar{VE}(w)$$ is normally used.
-$$\bar{VE}(w) = \sum_{s\in S} \mu(s) \left[ v_\pi(s) - \hat{v}(s, w) \right]^2$$
+$$Q^_\pi(s, a) = E_{s'}[r + \gamma max_{a'}Q_\pi(s', a')]$$
+
+Where Q_\pi(s, a) is the true q value of all $$s a$$ under a certain policy $$\pi$$ and $$\gamma$$ is a discount factor. We can use this formula to make updates to our state action values which guarantees us and in the tabular case it this is guaranteed to find the optimal value. This formula can be extended using a n step temporal difference approach where we aim to have the following equality for all state actions:
+
+$$
+Q_\pi^(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
+G = \sum_{i=0}^{n} \gamma^i r_{t+i}
+$$
+A bigger n reduces bias of the convergence (as we use more actual rewards) and a reduces variance due to the expectation over possible trajectories requiring less samples to converge. We notice that if n is equal to infinity then we always reach the end of the episode and we have a Monte Carlo algorithm. 
+
+Although we don't have any convergence guarantees for the function approximation case we can still make use of them for a loss function:
+$$
+L = \sum_s \mu(s) [q_\pi(s,a) - \hat{q}(s,a,w))]^2
+q_(s,a) = E_\tau [G + \gamma^{n+1} q_pi(s_{t+n}, a_{t+n})]
+$$
+
 PLEASE CITE BISHOP PAGE 199!
-$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. Due to the usual impossibility of finding a closed form solution to the minimization of $$\bar{VE}$$$$ we turn to gradient based methods specifically to stochastic gradient descent.
+$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. 
 
-With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of it's gradient. It's stochastic because we don't calculate the gradient of all the states instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion.
+Due to the usual impossibility of finding a closed form solution to the minimization of $$L$$ we turn to gradient based methods specifically to stochastic gradient descent.
+
+With stochastic gradient descent we try to iteratively decrease the loss by moving the parameters in the contrary direction of its gradient. It's stochastic because we don't calculate the full gradient of all the states, instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$mu(s)$$ explicitly as it will update more often the states we visit the most in the correct proportion.
+
+We can see that the gradient of our loss is 
+
+$$
+\frac{\partial}{\partial w} L = E_\tau[2 [q_\pi(s,a) - \hat{q}(s,a,w))] \nabla \hat{q}(s,a,w))]
+$$
+
+We assume that the target $$q_\pi(s,a)$$ is independent of the parametrization $$w$$ which is not true as unless we reach the final state we still have to calculate the q value of the final state, action using $$w$$. Because of that this gradient is called semi-gradient.
+Without this assumption we would calcutate the full gradient. 
 
 Experience replay is used as a mechanism that smooths the training distribution and reduces correlation between used samples which is a assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters oscilation or divergence. PLEASE CITE DQN PAPER.
 
 $$\epsilon$$ decay is also used as an exploration strategy. It employs an $$\epsilon$$ greedy strategy but with a linear decay of its parameter. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as 0.05. This allows for more exploration in the beginning, which is extremely necessairy in the case of scarce rewards, and more exploitation later on, allowing for better convergence of the state action values using a closer to optimal policy.
-
-If you don't remember your RL classes it's also important to talk about n-step TD learning. The ammount 
-
-Extending the $$\bar{VE}(w)$$ to a control algorith (that learns policies) we can reach a Q learning algorithm whose parameters updates, under a gradient descent algorithm, would be:
-
-$$w_{t+1} = w_t + \alpha\left[ R_{t+1} \right]
 
 
 ## Environments
