@@ -6,23 +6,26 @@ In this blog post we want to investigate the effectiveness os using the semi-gra
 When state spaces get too big to represent in a tabular fashion it is natural to move into action state value approximations where we try to create a function that, given the features of a state, returns a hopefully good guess of the corresponding actions values. Several possibilities exist for the construction of this function but we will focus on neural networks that can represent every possible parametric function.
 When trying to get a good parametrization the need for a loss function arises. The goal of function approximation will be therefore to minimize that loss. Here we turn to the Bellman equations and n-step TD learning to get a good loss function.
 
-$$Q^_\pi(s, a) = E_{s'}[r + \gamma max_{a'}Q_\pi(s', a')]$$
+$$Q_{\pi}(s, a) = E_{s'}[r + \gamma max_{a'}Q_\pi(s', a')]$$
 
 Where Q_\pi(s, a) is the true q value of all $$s a$$ under a certain policy $$\pi$$ and $$\gamma$$ is a discount factor. We can use this formula to make updates to our state action values which guarantees us and in the tabular case it this is guaranteed to find the optimal value. This formula can be extended using a n step temporal difference approach where we aim to have the following equality for all state actions:
 
 $$
-Q_\pi^(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
+Q_\pi(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
 G = \sum_{i=0}^{n} \gamma^i r_{t+i}
 $$
+
 A bigger n reduces bias of the convergence (as we use more actual rewards) and a reduces variance due to the expectation over possible trajectories requiring less samples to converge. We notice that if n is equal to infinity then we always reach the end of the episode and we have a Monte Carlo algorithm. 
 
 Although we don't have any convergence guarantees for the function approximation case we can still make use of them for a loss function:
+
 $$
 L = \sum_s \mu(s) [q_\pi(s,a) - \hat{q}(s,a,w))]^2
 q_(s,a) = E_\tau [G + \gamma^{n+1} q_pi(s_{t+n}, a_{t+n})]
 $$
 
 PLEASE CITE BISHOP PAGE 199!
+
 $$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. 
 
 Due to the usual impossibility of finding a closed form solution to the minimization of $$L$$ we turn to gradient based methods specifically to stochastic gradient descent.
