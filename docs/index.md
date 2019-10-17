@@ -167,7 +167,9 @@ Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environme
 </video>
 
 <figure>
-{% <!--include MsPacman-v0_G.html--> %}
+<!--
+include MsPacman-v0_G.html
+-->
 </figure>
 
 Ms PacMan is one of the Atari games contained in Gym. It has both a version played using RAM as input, as well as one using pixels as input. We used the latter here. This offers us an environment with discrete action and observation spaces, like FrozenLake, but characterized by a relatively large observation space compared to that of our other games.
