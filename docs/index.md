@@ -4,13 +4,15 @@ In this blog post we want to investigate the effectiveness of using the semi-gra
 
 
 ## Background
-In Reinforcement Learning the general goal is to learn the best possible behavior, called _policy_ $$\pi$$, for a computer program, called the _agent_, given its current _state_ and the available _actions_. An environment could be a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else what is learnable. Each environment gives rewards that can be negative or positive depending on what our agent does. The best possible policy maximizes these rewards. For example in the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful! This would encourage agents to find the exit in the shortest ammount of time.
+
+In Reinforcement Learning the general goal is to learn the best possible behavior, called _policy_ $$\pi$$, for a computer program, called the _agent_, given its current _state_ and the available _actions_. An environment could be a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that is learnable. Each environment gives rewards that can be negative or positive depending on what our agent does. The best possible policy maximizes these rewards. For example in the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful! This would encourage agents to find the exit in the shortest amount of time.
 
 <img src="https://imgs.xkcd.com/comics/computers_vs_humans.png" title="It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.">
 
 In the most naïve approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and take the next step.
 
 ### Value approximation
+
 When number of states get too big to keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on deep neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
 
 For training of our state-action value function we need a definition of the loss $$\mathcal{L}$$. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. To find this loss function we do a little excursion to the Bellman equations.
@@ -67,14 +69,18 @@ We assume that the target $$Q_\pi(s,a)$$ is independent of the weights for our n
 Without this assumption we would calculate the full gradient.
 
 ### Best practices
+
 #### Experience Replay
+
 Experience replay is a best practice used to smooth the variance of the weight updates to our network. For this we save the trajectories (the experience) in fixed size list and in every step we randomly sample a batch of experiences from this list to update with. More importantly this also breaks the temporal correlation between our samples, which is important as SGD needs independent samples. Experience replay reduces parameters' oscillation or likelihood to divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
 
 #### $$\epsilon$$-decay
+
 $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter $$\epsilon$$. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as $$0.05$$. This allows for more _exploration_ in the beginning (actually complete randomness in the absolute beginning), which is necessary in the case of scarce rewards, and more _exploitation_ later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
 
 ## Implementation
+
 We want to experiment with the differences in using semi- vs full-gradient in Deep TD-learning. For this we build a simple neural network in PyTorch as our value function approximator. We always use the same network architecture as we just need a network which is capable enough to represent our value functions. As the the environments we are going to use are all rather simple we stick to the same network layout for simplicity. Input is the state description. If the state space is discrete, we use one-hot-encoding. Then we have one linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action. For optimization We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/).
 
 For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
@@ -84,12 +90,14 @@ We built all this on top of the amazing deep learning library PyTorch.
 
 
 ## Environments
+
 We conduct multiple experiments using different environments. We checked all of the 747 environments, at version `0.15.3`, of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
 ## Experiments
 We test the difference between semi- and full-gradient in several different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 ### FrozenLake
+
 [The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
 
 We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
@@ -184,6 +192,7 @@ The trainng could not be completed due to lacking computing power. None the less
 <br/>
 
 ### Algorithmic environments
+
 The algorithmic environments are somewhat simpler, and similar in nature.
 Like FrozenLake they feature discrete action and observation spaces.
 
