@@ -91,13 +91,7 @@ The memory for the experience replay is always fixed to 10k elements and a batch
 
 ## Experiments
 
-We test the difference between semi- and full-gradient in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
-
-The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive, it did not outperform semi-gradient.
-This might be due two reasons.
-- First being the time spent training on each environment. Most games only reach the final reward after many steps. To avoid infinite episodes, a maximum has been set to terminate such episodes. This leads to the agent having few episodes where it reaches the final reward, and in the end it does not learn how to play the game. The solution to this is to increment the number of episodes, in the case of CartPole and Acrobot $100$ and $30$ for PacMan.
-- The second and more theoretical reason is that by using Q-learning, we already use a self-referential bootstrapping approach. Thus taking the full-gradient on the 'real' target is still an estimation biased just like the semi-gradient. This means that both methods use a very similar approach, which explains the similarity in our results.
-
+We test the difference between semi- and full-gradient in several different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 ### FrozenLake
 
@@ -208,8 +202,19 @@ Input here is a random string and the goal is to reverse the string.
 {% include Reverse-v0_G.html %}
 </figure>
 
+##Discussion
+
+The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ with pytorch autograd, it did not outperform semi-gradient.
+This might be due two reasons.
+
+- First being the time spent training on each environment. Most games only reach the final reward after many steps. To avoid infinite episodes, a maximum has been set to terminate such episodes. This leads to the agent having few episodes where it reaches the final reward, and in the end it does not learn how to play the game in the allowed number of episodes. The solution to this is to increment the number of episodes.
+
+- The second and more theoretical reason is that by using Q-learning, we already use a self-referential bootstrapping approach. Thus taking the full-gradient on the 'real' target is still an estimation biased just like the semi-gradient. This means that both methods use a very similar approach, which explains the similarity in our results.
+
+
 ## Conclusion
 In this blog post we explored deep TD-learning and specifically the influence of using the full- or semi-gradient of the TD error as our weight update.
-Sadly we saw that under our restrictions we cannot perform a meaningful comparison between those two.
+
+Unfortunatly the high computational cost of running reinforcement learning experiments in minimally complex environments limited the amount of experiences we could do. In these few runs the difference, in terms of speed of convergence or final results, had a too high variance to be possible to either prove or disprove it. Despite this it seems plausible that any difference is not enough to prefer one method over the other.
 
 All code is available under [https://github.com/morris-frank/uva-rl-reproducibility](https://github.com/morris-frank/uva-rl-reproducibility).
