@@ -67,6 +67,7 @@ $$
 
 We assume that the target $$Q_\pi(s,a)$$ is independent of the weights for our network $$w$$, which is not true, _as unless we reach the final state_, we still have to calculate the Q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
 Without this assumption, we would calculate the full gradient.
+
 Now, one might ask, if a semi-gradient has a lower computational complexity, does it work well enough to justify making this type of shortcut?
 As RL is generally pretty computationally expensive, any shortcuts we may find to be justified will be a big win for us. As such, we will make this question the focus of our experiment.
 
