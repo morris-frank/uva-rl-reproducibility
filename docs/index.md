@@ -148,7 +148,16 @@ The runs using semi-gradient and using full-gradient are color-coded.
     <source src="acrobot.mp4" type="video/mp4">
 </video>
 
-Our last experiment concerns the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
+Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing. So like CartPole, this game has a continuous observation space and a discrete action space.
+
+For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
+
+As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparamter selection in RL is difficult.
+
+To replicate these exact experiments run:
+```bash
+python run_envs.py --num_seeds=5 --alpha=1e-10 --gamma=0.97 --n_episodes=1500 --it_at_min=100000 --n_step=0 --env_ids Acrobot-v0
+```
 
 Below we plot the average duration of each episode over training as well as one standard deviation.
 The runs using semi-gradient and using full-gradient are color-coded.
