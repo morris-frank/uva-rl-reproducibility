@@ -73,58 +73,6 @@ $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsi
 
 We conduct multiple experiments using different environments. We went through all of the, at version `0.15.3`, 747 environments of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
-Different enviroments can have different properties.
-
-We thought about different environment properties to compare by, and came up with the following:
-
-state:
-- stationary (`None`), discrete, continuous
-- small vs large
-- observable vs partially-observable
-- deterministic vs stochastic (similar to above?)
-
-action:
-- discrete, continuous
-- small vs large
-
-reward:
-- episodic vs continuing (discounting)
-
-Unfortunately, some properties are missing representation among Gym environments altogether:
-- continuous time
-- stateless games e.g. Multi-Armed Bandit
-
-Our next step is to get a list of environments classified by these criteria.
-[Environments](https://gym.openai.com/environments/) we used all come directly from OpenAI's [gym](https://github.com/openai/gym) library, without additional extensions (e.g. OpenAI's [retro](https://github.com/openai/retro) environments).
-
-Ideally, we want to be able to find environments with certain properties automatically. To do this, we want to be able to programmatically access the properties of the environment.
-
-Unfortunately, some of these environment properties also cannot be distinguished programmatically using OpenAI Gym:
-- episodic vs continuing tasks
-- partial observability (unless you'd just consider all of Retro to qualify!)
-
-For the other properties we found a way to list them from Gym to enable sorting/filtering.
-This way we did some analysis on environment properties [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
-
-From this, we have taken the following observations:
-- 747 environments successfully load for us out of the box (which I think excludes Mujoco/Retro).
-- most of these environments use discrete observation/action spaces and are non-stochastic. these properties somewhat limit their complexity, which is good news for us!
-- the action space usually fits into 1 byte as well.
-- the observation space can get either small (toy games) or large (roms played from pixels).
-- roms usually have versions played on RAM as well, which use limited observation spaces and should be fully observable.
-- ram versions are marked informally by their name -- if pixel roms were as easily identifiable we'd have our way to categorize roms by observability.
-- some roms are also marked 'deterministic' by their name, yet their counterparts are also marked as deterministic in the metadata, so we do have some evidence the metadata is not fully reliable.
-- environments by properties:
-    - the only stochastic games use discrete act/obs spaces
-    - both continuous: Pendulum / MountainCarContinuous
-    - continuous state, discrete actions: has the infamous CartPole, plus a few others (easier/harder)
-    - continuous actions, discrete observations: some options like Copy
-    - stochastic, both spaces discrete: lists some versions of ElevatorAction-ram, which I don't buy as RAM should hold all state, so probably need some other stochastic env not formally listed as such (e.g. FrozenLake).
-    - deterministic, both spaces discrete: this is the biggest category. This can just use a popular environment such as GridWorld.
-    - stateless environments: multi-armed bandit? (not included in Gym)
-    - big space: anything on pixels (too expensive?) e.g. CartPole
-
-Based on this, we can probably just use some popular environments of manageable complexity, then maybe adjust/add as we learn more of how easy they are / how many we can take.
 
 ## Implementation
 
@@ -146,16 +94,23 @@ This might be due two reasons.
 
 ### FrozenLake
 
-FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
+[The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
+
+We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to 0.05 in 5k steps.
+We run this experiment for 1-step TD (a.k.a. TD(0)) 10 times.
+
+To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
+```bash
+python run_envs.py --env_ids=FrozenLake-v0 --num_seeds=10 --it_at_min=5000 --alpha=1e-5 --n_episodes=1500 --n_step 0
+```
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
 
 <figure>
 {% include FrozenLake-v0_G.html %}
 </figure>
 
-To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
-```bash
-python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
-```
 
 ### Cart Pole
 
@@ -167,11 +122,8 @@ The next experiment is using the [CartPole-v0](https://gym.openai.com/environmen
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
 $$\gamma$$ is fixed to $$0.8$$.
-The learning rate for the approximation model $$\alpha$$ is fixed to $$1e-3$$.
+The learning rate $$\alpha$$ is fixed to $$1e-3$$.
 We train for each n-step for 100 episodes and repeat each run five times.
-
-Below we plot the average duration of each episode over training as well as one standard deviation.
-The runs using semi-gradient and using full-gradient are color-coded.
 
 To replicate this exact experiment run:
 ```bash
@@ -179,6 +131,9 @@ python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_s
 python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=4 --env_ids CartPole-v0
 python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=8 --env_ids CartPole-v0
 ```
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
 
 <figure>
 {% include CartPole-v0_duration.html %}
@@ -193,19 +148,28 @@ python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_s
 
 Our last experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) environment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
 
-To replicate these exact experiments run:
-```bash
-python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
-```
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
 
 <figure>
 {% include Acrobot-v1_G.html %}
 </figure>
 
-### [Algorithmic environments](https://gym.openai.com/envs/#algorithmic)
+### Algorithmic environments
 
 The algorithmic environments are somewhat simpler, and similar in nature.
-Like FrozenLake and MsPacman, they feature discrete action and observation spaces.
+Like FrozenLake they feature discrete action and observation spaces.
+
+We set the discount factor $$\gamma$$ to $$0.95$$. The learning rate is set to $$\alpha=1e-5$$.
+We run the experiments for 4-step TD, 10 times.
+
+To replicate these exact experiments run:
+```bash
+python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
+```
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
 
 #### [Copy](https://gym.openai.com/envs/Copy-v0/)
 
