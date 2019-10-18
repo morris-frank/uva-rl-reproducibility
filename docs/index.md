@@ -49,7 +49,7 @@ $$
 PLEASE CITE BISHOP PAGE 199!
 -->
 
-$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment.
+$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parameterization w. $$\mu(s)$$ is the importance given to state $$s$$, and normally approximated with the relative number of times it appears in the experiences we have with the environment.
 
 Due to the usual impossibility of finding a closed-form solution to the minimization of $$\mathcal{L}$$, we turn to gradient-based methods, and specifically to [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD).
 
@@ -60,13 +60,26 @@ We can see that the gradient of our loss $$\mathcal{L}$$ with respect to the par
 $$
 \frac{\partial}{\partial w} \mathcal{L} =
 \begin{cases}
--\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) <= 0\\
+-\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) <= 0 \\
 \nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0
 \end{cases}
 $$
 
 We assume that the target $$Q_\pi(s,a)$$ is independent of the weights for our network $$w$$, which is not true, _as unless we reach the final state_, we still have to calculate the Q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
-Without this assumption we would calculate the full gradient.
+Without this assumption, we would calculate the full gradient.
+Now, one might ask, if a semi-gradient has a lower computational complexity, does it work well enough to justify making this type of shortcut?
+As RL is generally pretty computationally expensive, any shortcuts we may find to be justified will be a big win for us. As such, we will make this question the focus of our experiment.
+
+<!--
+## Semi-gradient vs. Full gradient
+-->
+
+## Implementation
+
+We want to experiment with the differences in using semi- vs full-gradient in Deep TD-learning. For this we build a simple neural network in PyTorch as our value function approximator. We always use the same network architecture as we just need a network which is capable enough to represent our value functions. As the the environments we are going to use are all rather simple we stick to the same network layout for simplicity. Input is the state description. If the state space is discrete, we use one-hot-encoding. Then we have one linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action. For optimization We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/).
+
+For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
+The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
 
 ### Best practices
 
@@ -77,15 +90,6 @@ Experience replay is a best practice used to smooth the variance of the weight u
 #### $$\epsilon$$-decay
 
 $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter $$\epsilon$$. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as $$0.05$$. This allows for more _exploration_ in the beginning (actually complete randomness in the absolute beginning), which is necessary in the case of scarce rewards, and more _exploitation_ later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
-
-
-## Implementation
-
-We want to experiment with the differences in using semi- vs full-gradient in Deep TD-learning. For this we build a simple neural network in PyTorch as our value function approximator. We always use the same network architecture as we just need a network which is capable enough to represent our value functions. As the the environments we are going to use are all rather simple we stick to the same network layout for simplicity. Input is the state description. If the state space is discrete, we use one-hot-encoding. Then we have one linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action. For optimization We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/).
-
-For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
-The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
-
 
 ## Environments
 
