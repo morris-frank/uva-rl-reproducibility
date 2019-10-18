@@ -163,12 +163,12 @@ The runs using semi-gradient and using full-gradient are color-coded.
 
 ### MsPacman
 
-Out of couriosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
-The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
-
 <video autoplay loop controls>
     <source src="MsPacman.mp4" type="video/mp4">
 </video>
+
+Out of couriosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
+The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
 
 ### Algorithmic environments
 The algorithmic environments are somewhat simpler, and similar in nature.
