@@ -162,13 +162,17 @@ The runs using semi-gradient and using full-gradient are color-coded.
 </figure>
 
 
-### Continuous observation space: Cart Pole
+### Continuous observation space: classic control problems
+
+The [classic control](https://gym.openai.com/envs/#classic_control) problems, commonly used in the reinforcement learning literature, are simple games about defying gravity. They feature discrete action spaces, but continuous observation spaces.
+
+#### Cart Pole
 
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
 </video>
 
-The next experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
+The next experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment.
 In CartPole we have a cart with a pole on it. The state describes where the cart is, the angle of the pole and the velocity of cart and pole. The goal is to keep the pole upright for the whole episode. The episode is ended if the angle is too big (meaning the pole fell). The action we can take is putting force on the cart, either from the left or the right in each time-step.
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
@@ -191,13 +195,13 @@ The runs using semi-gradient and using full-gradient are color-coded.
 </figure>
 
 
-### more continuous obvervation spaces: Acrobot
+#### Acrobot
 
 <video autoplay loop controls>
     <source src="acrobot.mp4" type="video/mp4">
 </video>
 
-Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing. So like CartPole, this game has a continuous observation space and a discrete action space.
+Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing.
 
 For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
 
@@ -215,7 +219,13 @@ The runs using semi-gradient and using full-gradient are color-coded.
 {% include Acrobot-v1_G.html %}
 </figure>
 
-### Large observation spaces: Ms Pacman
+### Large observation spaces: Atari games played on pixels
+
+Gym features a number of [Atari games](https://gym.openai.com/envs/#atari), although since then OpenAI's [retro library](https://openai.com/blog/gym-retro/) has added environments from other videogame consoles as well. These typically offer two variants: one played from RAM, another played purely using pixels as the observation space. The latter of these make for relatively large observation spaces, making these among the harder environments in Gym.
+As such, the pixel category is somewhat different from our previous environments here, so that is the one we will be using here.
+As these environments are harder, we have opted to just focus on one game from this category here: Ms Pacman.
+
+#### Ms Pacman
 
 <video autoplay loop controls>
     <source src="MsPacman.mp4" type="video/mp4">
