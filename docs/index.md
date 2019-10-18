@@ -96,105 +96,9 @@ We conduct multiple experiments using different environments. We checked all of 
 ## Experiments
 We test the difference between semi- and full-gradient in several different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
-### FrozenLake
+### Simple and discrete: algorithmic environments
 
-[The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
-
-We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
-We run this experiment for 1-step TD (a.k.a. TD(0)) 10 times.
-
-To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
-```bash
-python run_envs.py --env_ids=FrozenLake-v0 --num_seeds=10 --it_at_min=5000 --alpha=1e-5 --n_episodes=1500 --n_step 0
-```
-
-Below we plot the average complete return (sum of the un-discounted rewards) of each episode over training as well as one standard deviation.
-The runs using semi-gradient and using full-gradient are color-coded.
-
-<figure>
-{% include FrozenLake-v0_G.html %}
-</figure>
-
-
-### Cart Pole
-
-<video autoplay loop controls>
-    <source src="cartpole.mp4" type="video/mp4">
-</video>
-
-The next experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
-In CartPole we have a cart with a pole on it. The state describes where the cart is, the angle of the pole and the velocity of cart and pole. The goal is to keep the pole upright for the whole episode. The episode is ended if the angle is too big (meaning the pole fell). The action we can take is putting force on the cart, either from the left or the right in each time-step.
-
-As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
-$$\gamma$$ is fixed to $$0.8$$.
-The learning rate $$\alpha$$ is fixed to $$1e-3$$.
-We train for each n-step for 100 episodes and repeat each run five times.
-
-To replicate this exact experiment run:
-```bash
-python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=1 --env_ids CartPole-v0
-python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=4 --env_ids CartPole-v0
-python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=8 --env_ids CartPole-v0
-```
-
-Below we plot the average duration of each episode over training as well as one standard deviation.
-The runs using semi-gradient and using full-gradient are color-coded.
-
-<figure>
-{% include CartPole-v0_duration.html %}
-</figure>
-
-
-### Acrobot
-
-<video autoplay loop controls>
-    <source src="acrobot.mp4" type="video/mp4">
-</video>
-
-Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing. So like CartPole, this game has a continuous observation space and a discrete action space.
-
-For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
-
-As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparamter selection in RL is difficult.
-
-To replicate these exact experiments run:
-```bash
-python run_envs.py --num_seeds=5 --alpha=1e-10 --gamma=0.97 --n_episodes=1500 --it_at_min=100000 --n_step=0 --env_ids Acrobot-v0
-```
-
-Below we plot the average duration of each episode over training as well as one standard deviation.
-The runs using semi-gradient and using full-gradient are color-coded.
-
-<figure>
-{% include Acrobot-v1_G.html %}
-</figure>
-
-### MsPacman
-
-<video autoplay loop controls>
-    <source src="MsPacman.mp4" type="video/mp4">
-</video>
-
-Out of couriosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
-The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
-
-<br/>
-
-
-
-
-
-
-
-
-
-
-<br/>
-
-### Algorithmic environments
-
-The algorithmic environments are somewhat simpler, and similar in nature.
-Like FrozenLake they feature discrete action and observation spaces.
+The [algorithmic environments](https://gym.openai.com/envs/#algorithmic) are relatively simple, featuring discrete action and observation spaces, both small in size.
 
 We set the discount factor $$\gamma$$ to $$0.95$$. The learning rate is set to $$\alpha=1e-5$$.
 We run the experiments for 4-step TD, 10 times.
@@ -235,6 +139,90 @@ Input here is a random string and the goal is to reverse the string.
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
+
+### Discrete but stochastic: FrozenLake
+
+[The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
+We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid.
+But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, where falling in gives high negative reward.
+
+We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
+We run this experiment for 1-step TD (a.k.a. TD(0)) 10 times.
+
+To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
+```bash
+python run_envs.py --env_ids=FrozenLake-v0 --num_seeds=10 --it_at_min=5000 --alpha=1e-5 --n_episodes=1500 --n_step 0
+```
+
+Below we plot the average complete return (sum of the un-discounted rewards) of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
+
+<figure>
+{% include FrozenLake-v0_G.html %}
+</figure>
+
+
+### Continuous observation space: Cart Pole
+
+<video autoplay loop controls>
+    <source src="cartpole.mp4" type="video/mp4">
+</video>
+
+The next experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
+In CartPole we have a cart with a pole on it. The state describes where the cart is, the angle of the pole and the velocity of cart and pole. The goal is to keep the pole upright for the whole episode. The episode is ended if the angle is too big (meaning the pole fell). The action we can take is putting force on the cart, either from the left or the right in each time-step.
+
+As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
+$$\gamma$$ is fixed to $$0.8$$.
+The learning rate $$\alpha$$ is fixed to $$1e-3$$.
+We train for each n-step for 100 episodes and repeat each run five times.
+
+To replicate this exact experiment run:
+```bash
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=1 --env_ids CartPole-v0
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=4 --env_ids CartPole-v0
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=8 --env_ids CartPole-v0
+```
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
+
+<figure>
+{% include CartPole-v0_duration.html %}
+</figure>
+
+
+### more continuous obvervation spaces: Acrobot
+
+<video autoplay loop controls>
+    <source src="acrobot.mp4" type="video/mp4">
+</video>
+
+Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing. So like CartPole, this game has a continuous observation space and a discrete action space.
+
+For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
+
+As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparamter selection in RL is difficult.
+
+To replicate these exact experiments run:
+```bash
+python run_envs.py --num_seeds=5 --alpha=1e-10 --gamma=0.97 --n_episodes=1500 --it_at_min=100000 --n_step=0 --env_ids Acrobot-v0
+```
+
+Below we plot the average duration of each episode over training as well as one standard deviation.
+The runs using semi-gradient and using full-gradient are color-coded.
+
+<figure>
+{% include Acrobot-v1_G.html %}
+</figure>
+
+### Large observation spaces: Ms Pacman
+
+<video autoplay loop controls>
+    <source src="MsPacman.mp4" type="video/mp4">
+</video>
+
+Out of curiosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
+The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
 
 ## Discussion
 
