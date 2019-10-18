@@ -212,7 +212,7 @@ Input here is a random string and the goal is to reverse the string.
 {% include Reverse-v0_G.html %}
 </figure>
 
-##Discussion
+## Discussion
 
 The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ with pytorch autograd, it did not outperform semi-gradient.
 This might be due two reasons.
