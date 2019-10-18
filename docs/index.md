@@ -236,9 +236,3 @@ The algorithmic environments are somewhat simpler, and similar in nature. Like F
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
-
-#### [ReversedAddition](https://gym.openai.com/envs/ReversedAddition-v0/)
-
-<figure>
-{% include ReversedAddition-v0_G.html %}
-</figure>

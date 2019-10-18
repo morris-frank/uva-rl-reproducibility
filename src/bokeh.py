@@ -25,12 +25,15 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, w
     cnf = {True: {'legend': 'Semi-gradient', 'color': '#66C2A5'},
            False: {'legend': 'Full-gradient', 'color': '#FC8D62'}}
 
+    varnames = {'G': 'Return',
+                'duration': 'Length of episode'}
+
     if n_steps is None:
         n_steps = df.n_step.unique()
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
-        fig = figure(title=f'{var} of TD({n_step - 1})', active_scroll='wheel_zoom')
+        fig = figure(title=f'{varnames.get(var, var)} using {n_step - 1}-step TD', active_scroll='wheel_zoom')
         for semi in (True, False):
             # _df = step_df[df.semi_gradient == semi]
             # fig.circle(_df.episode, _df[var], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'])
