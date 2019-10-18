@@ -31,7 +31,7 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, w
                 'duration': 'Length of episode'}
 
     if n_steps is None:
-        n_steps = df.n_step.unique()
+        n_steps = sorted(df.n_step.unique())
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
