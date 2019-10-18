@@ -2,6 +2,8 @@
 
 In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
+Most TD-control methods using function approximation, will have an update of the model weights only using the semi-gradient ignoring the gradient of the TD-target. This seems unjustifiable as therefore our gradient update is not actually the gradient of any target goal. As such arises the question if ignoring the missing gradient of the TD error changes convergence properties of our model during training.
+
 
 ## Background
 
