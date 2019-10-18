@@ -56,7 +56,7 @@ With stochastic gradient descent, we try to iteratively decrease the loss by mov
 We can see that the gradient of our loss $$\mathcal{L}$$ with respect to the parameters $$w$$ of our network is:
 
 $$
-\frac{\partial}{\partial w} \mathcal{L} = 
+\frac{\partial}{\partial w} \mathcal{L} =
 \begin{cases}
 -\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0\\
 \nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0
@@ -74,27 +74,22 @@ Experience replay is a best practice used to smooth the variance of the weight u
 $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter $$\epsilon$$. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as $$0.05$$. This allows for more _exploration_ in the beginning (actually complete randomness in the absolute beginning), which is necessary in the case of scarce rewards, and more _exploitation_ later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
 
+## Implementation
+We want to experiment with the differences in using semi- vs full-gradient in Deep TD-learning. For this we build a simple neural network in PyTorch as our value function approximator. We always use the same network architecture as we just need a network which is capable enough to represent our value functions. As the the environments we are going to use are all rather simple we stick to the same network layout for simplicity. Input is the state description. If the state space is discrete, we use one-hot-encoding. Then we have one linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action. For optimization We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/).
+
+For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
+The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
+
+We built all this on top of the amazing deep learning library PyTorch.
+
+
 ## Environments
 We conduct multiple experiments using different environments. We checked all of the 747 environments, at version `0.15.3`, of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
-
-## Implementation
-For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action.
-We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss.
-
-For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
-
-We built all this on top of the amazing deep learning library Pytorch.
-
-The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
-
-
 ## Experiments
-
 We test the difference between semi- and full-gradient in several different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 ### FrozenLake
-
 [The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
 
 We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
@@ -168,7 +163,6 @@ The runs using semi-gradient and using full-gradient are color-coded.
 
 
 ### Algorithmic environments
-
 The algorithmic environments are somewhat simpler, and similar in nature.
 Like FrozenLake they feature discrete action and observation spaces.
 
