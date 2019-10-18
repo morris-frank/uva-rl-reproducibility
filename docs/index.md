@@ -38,8 +38,8 @@ Although we don't have any convergence guarantees for the function approximation
 
 $$
 \begin{align*}
-\mathcal{L} &= \sum_s \mu(s) [Q_\pi(s,a) - \hat{Q}(s,a|w))]^2\\
-Q_(s,a) &= \mathbb{E}_\tau [G + \gamma^{n+1} Q_{\pi}(s_{t+n}, a_{t+n})]
+\mathcal{L} &= \sum_s \mu(s) |Q_\pi(s,a) - \hat{Q}(s,a|w))|\\
+Q_\pi(s,a) &= \mathbb{E}_\tau [G + \gamma^{n+1} Q_{\pi}(s_{t+n}, a_{t+n})]
 \end{align*}
 $$
 
@@ -56,7 +56,11 @@ With stochastic gradient descent, we try to iteratively decrease the loss by mov
 We can see that the gradient of our loss $$\mathcal{L}$$ with respect to the parameters $$w$$ of our network is:
 
 $$
-\frac{\partial}{\partial w} \mathcal{L} = \mathbb{E}_\tau[2 [Q_\pi(s,a) - \hat{Q}(s,a,w))] \nabla \hat{Q}(s,a,w))]
+\frac{\partial}{\partial w} \mathcal{L} = 
+\begin{cases}
+-\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0\\
+\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0
+\end{cases}
 $$
 
 We assume that the target $$Q_\pi(s,a)$$ is independent of the weights for our network $$w$$, which is not true, _as unless we reach the final state_, we still have to calculate the Q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
@@ -75,12 +79,14 @@ We conduct multiple experiments using different environments. We checked all of 
 
 
 ## Implementation
-For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and another linear layer.
+For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and an output layer with one neuron for each action.
 We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss.
 
 For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
 
-The memory for the experience replay is always fixed to 10k elements and a batch size of 64 for the SGD.
+We built all this on top of the amazing deep learning library Pytorch.
+
+The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
 
 
 ## Experiments
