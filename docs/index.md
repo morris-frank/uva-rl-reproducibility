@@ -72,7 +72,7 @@ Without this assumption we would calculate the full gradient.
 
 #### Experience Replay
 
-Experience replay is a best practice used to smooth the variance of the weight updates to our network. For this we save the trajectories (the experience) in fixed size list and in every step we randomly sample a batch of experiences from this list to update with. More importantly this also breaks the temporal correlation between our samples, which is important as SGD needs independent samples. Experience replay reduces parameters' oscillation or likelihood to divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
+Experience replay is a best practice used to smooth the variance of the weight updates to our network. For this we save the trajectories (the experience) in a fixed-size list, and in every step we randomly sample a batch of experiences from this list to update with. More importantly this also breaks the temporal correlation between our samples, which is important as SGD needs independent samples. Experience replay reduces parameters' oscillation or likelihood to divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
 
 #### $$\epsilon$$-decay
 
@@ -116,28 +116,28 @@ Below we plot the average return of each episode over training as well as one st
 The runs using semi-gradient and using full-gradient are color-coded.
 
 #### [Copy](https://gym.openai.com/envs/Copy-v0/)
-Input here is a random string, goal is to just produce the same string.
+Input here is a random string, and the goal is to just produce the same string.
 
 <figure>
 {% include Copy-v0_G.html %}
 </figure>
 
 #### [DuplicatedInput](https://gym.openai.com/envs/DuplicatedInput-v0/)
-Input here is a string of random chars which each are double. Goal is to have the chars only once, basically get every second character.
+Input here is a string of random chars, which each are double. The goal is to have the chars only once, to basically get every second character.
 
 <figure>
 {% include DuplicatedInput-v0_G.html %}
 </figure>
 
 #### [RepeatCopy](https://gym.openai.com/envs/RepeatCopy-v0/)
-Input here is a random string and a integer m and goal is to produce a string of m concatenations of the input string.
+Input here is a random string and a integer m, and the goal is to produce a string of $$m$$ concatenations of the input string.
 
 <figure>
 {% include RepeatCopy-v0_G.html %}
 </figure>
 
 #### [Reverse](https://gym.openai.com/envs/Reverse-v0/)
-Input here is a random string and the goal is to reverse the string.
+Input here is a random string, and the goal is to reverse the string.
 
 <figure>
 {% include Reverse-v0_G.html %}
@@ -147,9 +147,9 @@ Input here is a random string and the goal is to reverse the string.
 
 [The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
 We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid.
-But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, where falling in gives high negative reward.
+But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice holes that, when falling in, gives high negative reward.
 
-We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
+We set the learning rate $$\alpha=1e{-}5$$, train for 1.5k steps and decay $$\epsilon$$ to $$0.05$$ in 5k steps.
 We run this experiment for 1-step TD (a.k.a. TD(0)) 10 times.
 
 To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
@@ -208,7 +208,7 @@ Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acr
 
 For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
 
-As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparamter selection in RL is difficult.
+As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparameter selection in RL is difficult.
 
 To replicate these exact experiments run:
 ```bash
@@ -235,7 +235,7 @@ As these environments are harder, we have opted to just focus on one game from t
 </video>
 
 Out of curiosity we tested our algorithm on the [MsPacman](https://gym.openai.com/envs/MsPacman-v0/) game. This environment gives out the screen-pixels as observation space therefore we used a convolutional neural net. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
-The training could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU training on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
+The training could not be completed due to lacking computing power. We trained the model for 30 hours on a Google Colab GPU instance. This game has been considered challenging by experts of the Google's AI research department [DeepMind](https://deepmind.com/).
 
 ## Discussion
 
