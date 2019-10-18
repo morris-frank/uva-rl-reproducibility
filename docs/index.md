@@ -2,12 +2,14 @@
 
 In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
+
 ## Background
-In Reinforcement Learning the general goal is to learn for our computer program (called the _agent_) what is best think to do (called the _policy_ $$\pi$$) given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
+In Reinforcement Learning the general goal is to learn for our computer program (called the _agent_) what is the best think to do (how a agent is behaving is called the _policy_ $$\pi$$) given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
 
 <img src="https://imgs.xkcd.com/comics/computers_vs_humans.png" title="It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.">
 
 In the most classical approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and that's it.
+
 
 ### Value approximation
 When number of states get too big keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on artificial neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
@@ -70,18 +72,17 @@ $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsi
 
 
 ## Environments
-
 We conduct multiple experiments using different environments. We went through all of the, at version `0.15.3`, 747 environments of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
 
 ## Implementation
-
 For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and another linear layer.
 We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss.
 
 For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
 
 The memory for the experience replay is always fixed to 10k elements and a batch size of 64 for the SGD.
+
 
 ## Results
 
@@ -91,6 +92,7 @@ The results did not show a clear advantage of using full-gradient over semi-grad
 This might be due two reasons.
 - First being the time spent training on each environment. Most games only reach the final reward after many steps. To avoid infinite episodes, a maximum has been set to terminate such episodes. This leads to the agent having few episodes where it reaches the final reward, and in the end it does not learn how to play the game. The solution to this is to increment the number of episodes, in the case of CartPole and Acrobot $100$ and $30$ for PacMan.
 - The second and more theoretical reason is that by using Q-learning, we already use a self-referential bootstrapping approach. Thus taking the full-gradient on the 'real' target is still an estimation biased just like the semi-gradient. This means that both methods use a very similar approach, which explains the similarity in our results.
+
 
 ### FrozenLake
 
@@ -118,7 +120,8 @@ The runs using semi-gradient and using full-gradient are color-coded.
     <source src="cartpole.mp4" type="video/mp4">
 </video>
 
-The next experiment is using the [CartPole-v0](https://gym.openai.com/environments/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
+The next experiment is using the [CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
+In CartPole we have a cart with a pole on it. The state describes where the cart is, the angle of the pole and the velocity of cart and pole. The goal is to keep the pole upright for the whole episode. The episode is ended if the angle is too big (meaning the pole fell). The action we can take is putting force on the cart, either from the left or the right in each time-step.
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
 $$\gamma$$ is fixed to $$0.8$$.
@@ -146,7 +149,7 @@ The runs using semi-gradient and using full-gradient are color-coded.
     <source src="acrobot.mp4" type="video/mp4">
 </video>
 
-Our last experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) environment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
+Our last experiment concerns the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
 
 Below we plot the average duration of each episode over training as well as one standard deviation.
 The runs using semi-gradient and using full-gradient are color-coded.
@@ -154,6 +157,7 @@ The runs using semi-gradient and using full-gradient are color-coded.
 <figure>
 {% include Acrobot-v1_G.html %}
 </figure>
+
 
 ### Algorithmic environments
 
@@ -194,3 +198,7 @@ The runs using semi-gradient and using full-gradient are color-coded.
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
+
+## Conlusion
+
+All code is available under [https://github.com/morris-frank/uva-rl-reproducibility](https://github.com/morris-frank/uva-rl-reproducibility).
