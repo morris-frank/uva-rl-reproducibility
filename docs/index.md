@@ -65,13 +65,15 @@ Without this assumption we would calculate the full gradient.
 #### Experience Replay
 Experience replay is a best practice used to smooth the variance of the weight updates to our network. For this we save the trajectories (the experience) in fixed size list and in every step we randomly sample a batch of experiences from this list to update with. More importantly this also breaks the temporal correlation between our samples, which is important as SGD needs independent samples. Experience replay reduces parameters' oscillation or likelihood to divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
 
-#### $$epsilon$$-decay
+#### $$\epsilon$$-decay
 $$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter $$\epsilon$$. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as $$0.05$$. This allows for more _exploration_ in the beginning (actually complete randomness in the absolute beginning), which is necessary in the case of scarce rewards, and more _exploitation_ later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
 
 ## Environments
 
 We conduct multiple experiments using different environments. We went through all of the, at version `0.15.3`, 747 environments of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
+
+Different enviroments can have different properties.
 
 We thought about different environment properties to compare by, and came up with the following:
 
@@ -127,12 +129,15 @@ Based on this, we can probably just use some popular environments of manageable 
 ## Implementation
 
 For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and another linear layer.
-We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss, and a learning rate $$\alpha = 0.001$$.
-Our reinforcement learning agent consists of a semi-gradient Q-learning agent, with reward decay $$\gamma = 0.8$$, a final random action ratio $$\epsilon = 0.05$$ after 1,000 episodes of decay, a memory unit of 10,000 cells, 2 steps to consider, and a batch size of 64.
+We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss.
+
+For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
+
+The memory for the experience replay is always fixed to 10k elements and a batch size of 64 for the SGD.
 
 ## Results
 
-We test our hypothesis in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/), [Ms PacMan](https://gym.openai.com/envs/MsPacman-v0/), and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
+We test our hypothesis in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive, it did not outperform semi-gradient.
 This might be due two reasons.
@@ -152,7 +157,8 @@ To replicate these exact experiments deterministically (using the same seeds for
 python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
 ```
 
-### [Cart Pole](https://gym.openai.com/envs/CartPole-v1/)
+### Cart Pole
+
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
 </video>
@@ -167,10 +173,6 @@ We train for each n-step for 100 episodes and repeat each run five times.
 Below we plot the average duration of each episode over training as well as one standard deviation.
 The runs using semi-gradient and using full-gradient are color-coded.
 
-<figure>
-{% include CartPole-v0_duration.html %}
-</figure>
-
 To replicate this exact experiment run:
 ```bash
 python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=1 --env_ids CartPole-v0
@@ -178,46 +180,27 @@ python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_s
 python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=8 --env_ids CartPole-v0
 ```
 
+<figure>
+{% include CartPole-v0_duration.html %}
+</figure>
 
-### [Acrobot](https://gym.openai.com/envs/Acrobot-v1/)
+
+### Acrobot
 
 <video autoplay loop controls>
     <source src="acrobot.mp4" type="video/mp4">
 </video>
 
-Our second experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) enviroment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
+Our last experiment concerns the [Acrobot-v1](https://gym.openai.com/environments/Acrobot-v1/) environment from the OpenAI gym. Like CartPole, this game has a continuous observation space and a discrete action space.
+
+To replicate these exact experiments run:
+```bash
+python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
+```
 
 <figure>
 {% include Acrobot-v1_G.html %}
 </figure>
-
-### [Ms PacMan](https://gym.openai.com/envs/MsPacMan-v0/)
-
-<video autoplay loop controls>
-    <source src="MsPacman.mp4" type="video/mp4">
-</video>
-
-<figure>
-<!--
-include MsPacman-v0_G.html
--->
-</figure>
-
-Ms PacMan is one of the Atari games contained in Gym. It has both a version played using RAM as input, as well as one using pixels as input. We used the latter here. This offers us an environment with discrete action and observation spaces, like FrozenLake, but characterized by a relatively large observation space compared to that of our other games.
-To solve this game with the displayed pixels as observation space, a Convolutional Neural Network (CNN) is required. We opted for a simple architecture due to limited computational resources.
-The CNN consists of the following (2d) layers:
-- batch-norm
-- convolution
-- max-pool
-- convolution
-- max-pool
-- linear
-- ReLU
-- linear
-
-<!--
-Training on GPU necessary.
--->
 
 ### [Algorithmic environments](https://gym.openai.com/envs/#algorithmic)
 
@@ -247,8 +230,3 @@ Like FrozenLake and MsPacman, they feature discrete action and observation space
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
-
-To replicate these exact experiments run:
-```bash
-python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
-```
