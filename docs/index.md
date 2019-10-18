@@ -1,25 +1,25 @@
 # Semi-gradient vs full-gradient in Deep TD-learning
 
-In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
+In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
 
 ## Background
-In Reinforcement Learning the general goal is to learn the best possible behavior, called _policy_ $$\pi$$, for a computer program, called the _agent_, given its current _state_ and the available _actions_. An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment gives rewards that can be negative or positive depending on what our agent does. The best possible policy maximizes these rewards. For example in the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful! This would encourage agents to find the exit in the shortest ammount of time.
+In Reinforcement Learning the general goal is to learn the best possible behavior, called _policy_ $$\pi$$, for a computer program, called the _agent_, given its current _state_ and the available _actions_. An environment could be a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else what is learnable. Each environment gives rewards that can be negative or positive depending on what our agent does. The best possible policy maximizes these rewards. For example in the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful! This would encourage agents to find the exit in the shortest ammount of time.
 
 <img src="https://imgs.xkcd.com/comics/computers_vs_humans.png" title="It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.">
 
-In the most naïve approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and that's it.
+In the most naïve approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and take the next step.
 
 ### Value approximation
-When number of states get too big keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on artificial neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
+When number of states get too big to keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on deep neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
 
-For training of our state-action-value-function we need a definition of the loss $$\mathcal{L}$$. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. To find this loss function we do a little excursion to the Bellman equations.
+For training of our state-action value function we need a definition of the loss $$\mathcal{L}$$. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. To find this loss function we do a little excursion to the Bellman equations.
 
 Almost all of reinforcement learning is base on the [Bellman equations](https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/). The most basic Bellman equation for our state-action value (called the $$Q$$-value) is:
 
 $$Q_{\pi}(s, a) = \mathbb{E}_{s'}[r + \gamma\cdot \max_{a'}Q_\pi(s', a')]$$
 
-This gives us the $$Q$$-value for state $$s$$ and action $$a$$ under the policy $$\pi$$. Now the expectation $$\mathbb{E}_{s'}$$ just means that given  we took action $$a$$ from state $$s$$ we might end up in different new states, as there is often randomness involved in these environments. The expectation gives us the weighted sum of all the following states. Inside for each of those we get the immediate reward $$r$$ (which might be negative!) times the maximal state-action value of this new state. The $$\gamma$$ is the _discount factor_, reduces the future reward. By having a $$\gamma < 1$$ we imply that we value direct rewards more than rewards in the far future. This is common idea found in economics as well as psychology.
+This gives us the $$Q$$-value for state $$s$$ and action $$a$$ under the policy $$\pi$$. Now the expectation $$\mathbb{E}_{s'}$$ just means that given  we took action $$a$$ from state $$s$$ we might end up in different new states, as there is often randomness involved in these environments. The expectation gives us the weighted sum of all the following states. Inside for each of those we get the immediate reward $$r$$ (which might be negative!) times the maximal state-action value of this new state. The $$\gamma$$ is the _discount factor_, reduces the future reward. By having a $$\gamma < 1$$ we imply that we value direct rewards more than rewards in the far future. This is a common idea which can be found in economics and psychology as well.
 
 The basic Bellman equation implies that we can learn $$Q(s,a)$$ by learning the the update of going from $$(s,a)$$ to $$(s',a')$$ which is one step in the future (the next action taken, afterwards). Therefore this method is called Temporal difference. We can extend the Temporal difference into a longer temporal chain, comparing the value $$(s,a)$$ the value of the state 2,3,… time-steps away. This yields the Bellman equation for _n_-step temporal differences:
 
@@ -58,7 +58,7 @@ We can see that the gradient of our loss $$\mathcal{L}$$ with respect to the par
 $$
 \frac{\partial}{\partial w} \mathcal{L} =
 \begin{cases}
--\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0\\
+-\nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) <= 0\\
 \nabla \hat{Q}(s,a,w)), &Q_\pi(s,a) - \hat{Q}(s,a,w)) >= 0
 \end{cases}
 $$
@@ -161,6 +161,14 @@ The runs using semi-gradient and using full-gradient are color-coded.
 {% include Acrobot-v1_G.html %}
 </figure>
 
+### MsPacman
+
+Out of couriosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
+The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
+
+<video autoplay loop controls>
+    <source src="MsPacman.mp4" type="video/mp4">
+</video>
 
 ### Algorithmic environments
 The algorithmic environments are somewhat simpler, and similar in nature.
