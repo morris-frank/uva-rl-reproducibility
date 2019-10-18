@@ -1,6 +1,6 @@
 # Semi-gradient vs full-gradient in Deep TD-learning
 
-In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
+In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments. While the semi-gradient is slightly easier to compute, our experiments aim to find a significant difference in performance between the two algorithms.
 
 
 ## Background
