@@ -94,7 +94,12 @@ We built all this on top of the amazing deep learning library PyTorch.
 We conduct multiple experiments using different environments. We checked all of the 747 environments, at version `0.15.3`, of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
 ## Experiments
-We test the difference between semi- and full-gradient in several different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
+
+We test the difference between semi- and full-gradient in a couple of environments with different properties: 
+- simple discrete games: [algorithmic environments](https://gym.openai.com/envs/#algorithmic)
+- stochastic games: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/)
+- continuous observation spaces: [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/)
+- envs with large observation spaces: [MsPacman](https://gym.openai.com/envs/MsPacman-v0/)
 
 ### Simple and discrete: algorithmic environments
 
@@ -231,7 +236,7 @@ As these environments are harder, we have opted to just focus on one game from t
     <source src="MsPacman.mp4" type="video/mp4">
 </video>
 
-Out of curiosity we tested our algorithm on the MsPacman game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
+Out of curiosity we tested our algorithm on the [MsPacman](https://gym.openai.com/envs/MsPacman-v0/) game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
 The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
 
 ## Discussion
