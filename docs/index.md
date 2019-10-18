@@ -5,14 +5,14 @@ In this blog post we want to investigate the effectiveness os using the semi-gra
 ## Background
 In Reinforcement Learning the general goal is to learn for our computer program (called the _agent_) what is best think to do (called the _policy_ $$\pi$$) given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
 
-![It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.](https://imgs.xkcd.com/comics/computers_vs_humans.png)
+<img src="https://imgs.xkcd.com/comics/computers_vs_humans.png" title="It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.">
 
 In the most classical approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and that's it.
 
 ### Value approximation
 When number of states get too big keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on artificial neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
 
-For training of our state-action-value-function we need a definition of the loss. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth.
+For training of our state-action-value-function we need a definition of the loss $$\mathcal{L}$$. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. To find this loss function we do a little excursion to the Bellman equations.
 
 Almost all of reinforcement learning is base on the [Bellman equations](https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/). The most basic Bellman equation for our state-action value (called the $$Q$$-value) is:
 
@@ -31,13 +31,15 @@ $$
 
 As we're _n_ time-steps away from the state-action pair $$(s,a)$$ we need the expectation over all _trajectories_ $$\tau$$ to the target  pair $$(s_{t+n}, a_{t+n})$$. $$G$$ here is the _discounted_  reward, where we recursively apply the discount factor $$\gamma$$ to all the intermediate returns $$r_i$$ for the state transitions between $$s$$ and $$s_{t+n}$$.
 
-A bigger $$n$$ reduces bias of the convergence, as we use more actual rewards, and reduces variance, due to the expectation over possible trajectories requiring less samples to converge. Note that if $$n$$ is equal to infinity, then we always reach the end of the episode, and we have a Monte Carlo algorithm.
+A bigger $$n$$ reduces bias of the convergence, as we use more actual rewards, and reduces variance, due to the expectation over possible trajectories requiring less samples to converge. Note that if $$n$$ is equal to infinity, then we always reach the end of the episode, and we have a so called Monte Carlo method.
 
-Although we don't have any convergence guarantees for the function approximation case, we can still make use of them for a loss function:
+Although we don't have any convergence guarantees for the function approximation case, we can still make use of them for a loss function $$\mathcal{L}$$:
 
 $$
-L = \sum_s \mu(s) [q_\pi(s,a) - \hat{q}(s,a,w))]^2
-q_(s,a) = E_\tau [G + \gamma^{n+1} q_pi(s_{t+n}, a_{t+n})]
+\begin{align*}
+\mathcal{L} &= \sum_s \mu(s) [Q_\pi(s,a) - \hat{Q}(s,a|w))]^2
+Q_(s,a) &= \mathbb{E}_\tau [G + \gamma^{n+1} Q_{\pi}(s_{t+n}, a_{t+n})]
+\end{align*}
 $$
 
 <!--
@@ -48,19 +50,22 @@ $$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ 
 
 Due to the usual impossibility of finding a closed-form solution to the minimization of $$L$$, we turn to gradient-based methods, and specifically to [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD).
 
-With stochastic gradient descent, we try to iteratively decrease the loss by moving the parameters in the direction opposite of its gradient. It's stochastic because we don't calculate the full gradient of all the states, instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$\mu(s)$$ explicitly, as it will more often update the states we visit the most in the correct proportion.
+With stochastic gradient descent, we try to iteratively decrease the loss by moving the parameters in the direction opposite of its gradient. The gradient is stochastic because we don't calculate the full gradient of all the states, instead calculating it only with the states we visited during the experiences. This will also remove the need to calculate $$\mu(s)$$ explicitly, as the SGD will update the states precisely in the proportion we visit them which is $$\mu(s)$$.
 
-We can see that the gradient of our loss is:
+We can see that the gradient of our loss $$\mathcal{L}$$ with respect to the parameters $$w$$ of our network is:
 
 $$
-\frac{\partial}{\partial w} L = E_\tau[2 [q_\pi(s,a) - \hat{q}(s,a,w))] \nabla \hat{q}(s,a,w))]
+\frac{\partial}{\partial w} \mathcal{L} = \mathbb{E}_\tau[2 [Q_\pi(s,a) - \hat{Q}(s,a,w))] \nabla \hat{Q}(s,a,w))]
 $$
 
-We assume that the target $$q_\pi(s,a)$$ is independent of the parametrization $$w$$, which is not true, as unless we reach the final state, we still have to calculate the q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
+We assume that the target $$Q_\pi(s,a)$$ is independent of the weights for our network $$w$$, which is not true, _as unless we reach the final state_, we still have to calculate the Q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
 Without this assumption we would calculate the full gradient.
 
-Experience replay is used as a mechanism that smooths the training distribution, and reduces correlation between used samples which is an assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters' oscillation or divergence (see [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf)).
+### Best practices
+#### Experience Replay
+Experience replay is used to smooth the training distribution, and to reduce correlation between used samples which is an assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters' oscillation or divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
 
+#### $$epsilon$$-decay
 $$\epsilon$$-decay is also used as an exploration strategy. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as 0.05. This allows for more exploration in the beginning, which is extremely necessary in the case of scarce rewards, and more exploitation later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
 
