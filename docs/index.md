@@ -3,23 +3,33 @@
 In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
 ## Background
-In Reinforcement Learning the general goal is to learn for our  computer program (called the _agent_) what is best think to do given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
+In Reinforcement Learning the general goal is to learn for our computer program (called the _agent_) what is best think to do (called the _policy_ $$\pi$$) given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
+
+![It's hard to train deep learning algorithms when most of the positive feedback they get is sarcastic.](https://imgs.xkcd.com/comics/computers_vs_humans.png)
 
 In the most classical approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and that's it.
 
 ### Value approximation
 When number of states get too big keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on artificial neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
 
-For training of our state-action-value-function we need a definition of the loss. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. Almost all of reinforcement learning is base on the [Bellman equations](https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/). The most basic Bellman equation for our state-action value (called the $$Q$$-value) is:
+For training of our state-action-value-function we need a definition of the loss. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth.
 
-$$Q_{\pi}(s, a) = E_{s'}[r + \gamma max_{a'}Q_\pi(s', a')]$$
+Almost all of reinforcement learning is base on the [Bellman equations](https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/). The most basic Bellman equation for our state-action value (called the $$Q$$-value) is:
 
-Where $$Q_\pi(s, a)$$ is the true q value of all $$s, a$$ under a certain policy $$\pi$$, and $$\gamma$$ is a discount factor. We can use this formula to make updates to our state-action values, which in the tabular case is guaranteed to find the optimal value. This formula can be extended using a n-step temporal difference approach where we aim to have the following equality for all state-actions:
+$$Q_{\pi}(s, a) = \mathbb{E}_{s'}[r + \gamma\cdot \max_{a'}Q_\pi(s', a')]$$
+
+This gives us the $$Q$$-value for state $$s$$ and action $$a$$ under the policy $$\pi$$. Now the expectation $$\mathbb{E}_{s'}$$ just means that given  we took action $$a$$ from state $$s$$ we might end up in different new states, as there is often randomness involved in these environments. The expectation gives us the weighted sum of all the following states. Inside for each of those we get the immediate reward $$r$$ (which might be negative!) times the maximal state-action value of this new state. The $$\gamma$$ is the _discount factor_, reduces the future reward. By having a $$\gamma < 1$$ we imply that we value direct rewards more than rewards in the far future. This is common idea found in economics as well as psychology.
+
+The basic Bellman equation implies that we can learn $$Q(s,a)$$ by learning the the update of going from $$(s,a)$$ to $$(s',a')$$ which is one step in the future (the next action taken, afterwards). Therefore this method is called Temporal difference. We can extend the Temporal difference into a longer temporal chain, comparing the value $$(s,a)$$ the value of the state 2,3,… time-steps away. This yields the Bellman equation for _n_-step temporal differences:
 
 $$
-Q_\pi(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
-G = \sum_{i=0}^{n} \gamma^i r_{t+i}
+\begin{align*}
+Q_\pi(s_t, a_t) &= \mathbb{E}_\tau [G + \gamma^{n+1} \cdot q(s_{t+n}, a_{t+n})]\\
+G &= \sum_{i=0}^{n} \gamma^i \cdot r_{t+i}
+\end{align*}
 $$
+
+As we're _n_ time-steps away from the state-action pair $$(s,a)$$ we need the expectation over all _trajectories_ $$\tau$$ to the target  pair $$(s_{t+n}, a_{t+n})$$. $$G$$ here is the _discounted_  reward, where we recursively apply the discount factor $$\gamma$$ to all the intermediate returns $$r_i$$ for the state transitions between $$s$$ and $$s_{t+n}$$.
 
 A bigger $$n$$ reduces bias of the convergence, as we use more actual rewards, and reduces variance, due to the expectation over possible trajectories requiring less samples to converge. Note that if $$n$$ is equal to infinity, then we always reach the end of the episode, and we have a Monte Carlo algorithm.
 
