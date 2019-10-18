@@ -1,6 +1,6 @@
 # Semi-gradient vs full-gradient in Deep TD-learning
 
-In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments. While the semi-gradient is slightly easier to compute, our experiments aim to find a significant difference in performance between the two algorithms.
+In this blog post we want to investigate the effectiveness of using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
 
 ## Background
@@ -90,6 +90,8 @@ The memory for the experience replay is always fixed to 10k elements and a batch
 ## Environments
 
 We conduct multiple experiments using different environments. We checked all of the 747 environments, at version `0.15.3`, of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
+
+Depending on their relative complexity, we run each of these environments for anywhere from a hundred to a few thousand episodes, then repeat this for a number of different seeds, again depending on how computationally expensive the game is, balancing statistical rigor with computational constraints.
 
 ## Experiments
 
@@ -206,7 +208,7 @@ The runs using semi-gradient and using full-gradient are color-coded.
 
 Next up we run experiments with the [Acrobot-v1](https://gym.openai.com/envs/Acrobot-v1/) environment from the OpenAI gym. In this environment we have a double pendulum with the goal to swing it high enough for the outer end to reach a certain height. The pendulum has two joints but only the lower one, between the two sticks, is moveable. As such as actions are putting torque on the joint in either direction or do nothing.
 
-For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 5 times for 1500 episodes.
+For our experiment we set the learning rate $$\alpha$$ to $$1e-10$$, the discount factor $$\gamma$$ to $$0.97$$ and decay $$\epsilon$$ to $$0.05$$ it 1e5 steps. For each semi- and full-gradient we run 1500 episodes per seed.
 
 As in all the experiments we have problems getting the model to consistently learn in a short amount of time. Out of five runs, for both semi- and full-gradient four did diverge and did not produce anything. Therefore we only plot the 1 run of each which did not diverge. Therefore we do only have one run to compare. Hyperparameter selection in RL is difficult.
 
