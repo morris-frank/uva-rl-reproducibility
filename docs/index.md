@@ -86,8 +86,6 @@ We want to experiment with the differences in using semi- vs full-gradient in De
 For each experiment we have to set a learning rate $$\alpha$$, a discount factor $$\gamma$$, and the speed of the $$\epsilon$$ decay.
 The memory for the experience replay is always fixed to 10k elements and a batch size of 64 is used for the SGD.
 
-We built all this on top of the amazing deep learning library PyTorch.
-
 
 ## Environments
 
@@ -95,7 +93,7 @@ We conduct multiple experiments using different environments. We checked all of 
 
 ## Experiments
 
-We test the difference between semi- and full-gradient in a couple of environments with different properties: 
+We test the difference between semi- and full-gradient in a couple of environments with different properties:
 - simple discrete games: [algorithmic environments](https://gym.openai.com/envs/#algorithmic)
 - stochastic games: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/)
 - continuous observation spaces: [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/)
@@ -226,7 +224,7 @@ The runs using semi-gradient and using full-gradient are color-coded.
 
 ### Large observation spaces: Atari games played on pixels
 
-Gym features a number of [Atari games](https://gym.openai.com/envs/#atari), although since then OpenAI's [retro library](https://openai.com/blog/gym-retro/) has added environments from other videogame consoles as well. These typically offer two variants: one played from RAM, another played purely using pixels as the observation space. The latter of these make for relatively large observation spaces, making these among the harder environments in Gym.
+Gym features a number of [Atari games](https://gym.openai.com/envs/#atari), although since then OpenAI's [retro library](https://openai.com/blog/gym-retro/) has added environments from other video-game consoles as well. These typically offer two variants: one played from RAM, another played purely using pixels as the observation space. The latter of these make for relatively large observation spaces, making these among the harder environments in Gym.
 As such, the pixel category is somewhat different from our previous environments here, so that is the one we will be using here.
 As these environments are harder, we have opted to just focus on one game from this category here: Ms Pacman.
 
@@ -236,22 +234,24 @@ As these environments are harder, we have opted to just focus on one game from t
     <source src="MsPacman.mp4" type="video/mp4">
 </video>
 
-Out of curiosity we tested our algorithm on the [MsPacman](https://gym.openai.com/envs/MsPacman-v0/) game. This environment gives out the screen-pixels as observation space. There fore a convolutional neural net had to be implemented. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
-The trainng could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU trainng on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
+Out of curiosity we tested our algorithm on the [MsPacman](https://gym.openai.com/envs/MsPacman-v0/) game. This environment gives out the screen-pixels as observation space therefore we used a convolutional neural net. We chose a simple architecture of two convolutional layers with batch normalization and max-pooling and two fully connected layers with a ReLU activation function.
+The training could not be completed due to lacking computing power. None the less we are proud to present our self-learned Pacman agent after 30 hours of GPU training on Google colab. This game has been considered challenging by experts of the Googles AI research department [DeepMind](https://deepmind.com/).
 
 ## Discussion
 
-The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ with pytorch autograd, it did not outperform semi-gradient.
+The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ with PyTorch autograd, it did not outperform semi-gradient.
 This might be due two reasons.
 
 - First being the time spent training on each environment. Most games only reach the final reward after many steps. To avoid infinite episodes, a maximum has been set to terminate such episodes. This leads to the agent having few episodes where it reaches the final reward, and in the end it does not learn how to play the game in the allowed number of episodes. The solution to this is to increment the number of episodes.
 
-- The second and more theoretical reason is that by using Q-learning, we already use a self-referential bootstrapping approach. Thus taking the full-gradient on the 'real' target is still an estimation biased just like the semi-gradient. This means that both methods use a very similar approach, which explains the similarity in our results.
+- Second we can look at the difference between semi-gradient and full-gradient of the TD error in n-step TD-control more theoretically. We see that for the neural network in an weight update step the only difference is that we also include the backward pass for the inference of the value for the target. Even adding this gradient still keeps the method a bootstrapping method which will both just minimize the TD error.
 
 
 ## Conclusion
 In this blog post we explored deep TD-learning and specifically the influence of using the full- or semi-gradient of the TD error as our weight update.
 
-Unfortunatly the high computational cost of running reinforcement learning experiments in minimally complex environments limited the amount of experiences we could do. In these few runs the difference, in terms of speed of convergence or final results, had a too high variance to be possible to either prove or disprove it. Despite this it seems plausible that any difference is not enough to prefer one method over the other.
+Unfortunately the high computational cost of running reinforcement learning experiments in minimally complex environments limited the amount of experiences we could do. In these few runs the difference in speed of convergence or final results had a too high variance to be possible to either prove or disprove an existing performance difference. Despite this it seems plausible that any difference is not enough to prefer one method over the other.
+
+In general we saw again that in RL hyperparameter selection is decisive for the performance of the model. This holds specifically true in function-approximation TD-control. Therefore defining the correct experiments for any ablation study is considerably dependent on them.
 
 All code is available under [https://github.com/morris-frank/uva-rl-reproducibility](https://github.com/morris-frank/uva-rl-reproducibility).
