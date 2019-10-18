@@ -84,9 +84,9 @@ For each experiment we have to set a learning rate $$\alpha$$, a discount factor
 The memory for the experience replay is always fixed to 10k elements and a batch size of 64 for the SGD.
 
 
-## Results
+## Experiments
 
-We test our hypothesis in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
+We test the difference between semi- and full-gradient in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/) and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive, it did not outperform semi-gradient.
 This might be due two reasons.
@@ -96,7 +96,7 @@ This might be due two reasons.
 
 ### FrozenLake
 
-[The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
+[The FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/) is a variant on the simple GridWorld. We have a small discrete 2D grid on which the actor can move in any of the four directions. The goal is to just go from one point to another point on the grid. But as the lake is frozen the agent might slip, so given an action the transition to another state is stochastic. Also the lake has ice-holes that, when fallen-in gives high negative reward. FrozenLake is an environment where both state and observation spaces are discrete, making it relatively simple compared to our other environments.
 
 We set the learning rate $$\alpha=1e-5$$, train for 1.5k steps and decay $$\epsilon$$ to 0.05 in 5k steps.
 We run this experiment for 1-step TD (a.k.a. TD(0)) 10 times.
@@ -106,7 +106,7 @@ To replicate these exact experiments deterministically (using the same seeds for
 python run_envs.py --env_ids=FrozenLake-v0 --num_seeds=10 --it_at_min=5000 --alpha=1e-5 --n_episodes=1500 --n_step 0
 ```
 
-Below we plot the average duration of each episode over training as well as one standard deviation.
+Below we plot the average complete return (sum of the un-discounted rewards) of each episode over training as well as one standard deviation.
 The runs using semi-gradient and using full-gradient are color-coded.
 
 <figure>
@@ -172,33 +172,39 @@ To replicate these exact experiments run:
 python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
 ```
 
-Below we plot the average duration of each episode over training as well as one standard deviation.
+Below we plot the average return of each episode over training as well as one standard deviation.
 The runs using semi-gradient and using full-gradient are color-coded.
 
 #### [Copy](https://gym.openai.com/envs/Copy-v0/)
+Input here is a random string, goal is to just produce the same string.
 
 <figure>
 {% include Copy-v0_G.html %}
 </figure>
 
 #### [DuplicatedInput](https://gym.openai.com/envs/DuplicatedInput-v0/)
+Input here is a string of random chars which each are double. Goal is to have the chars only once, basically get every second character.
 
 <figure>
 {% include DuplicatedInput-v0_G.html %}
 </figure>
 
 #### [RepeatCopy](https://gym.openai.com/envs/RepeatCopy-v0/)
+Input here is a random string and a integer m and goal is to produce a string of m concatenations of the input string.
 
 <figure>
 {% include RepeatCopy-v0_G.html %}
 </figure>
 
 #### [Reverse](https://gym.openai.com/envs/Reverse-v0/)
+Input here is a random string and the goal is to reverse the string.
 
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
 
-## Conlusion
+## Conclusion
+In this blog post we explored deep TD-learning and specifically the influence of using the full- or semi-gradient of the TD error as our weight update.
+Sadly we saw that under our restrictions we cannot perform a meaningful comparison between those two.
 
 All code is available under [https://github.com/morris-frank/uva-rl-reproducibility](https://github.com/morris-frank/uva-rl-reproducibility).
