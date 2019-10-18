@@ -1,10 +1,16 @@
-# Semi-gradient vs full-gradient in Deep Q-learning
+# Semi-gradient vs full-gradient in Deep TD-learning
 
-In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient in deep Q-learning in different enviroments.
+In this blog post we want to investigate the effectiveness os using the semi-gradient and the full-gradient updates for a deep value function approximator in Temporal-difference learning in different environments.
 
 ## Background
-When state spaces get too big to represent in a tabular fashion it is natural to move into action state value approximations where we try to create a function that, given the features of a state, returns a hopefully good guess of the corresponding action values. Several possibilities exist for the construction of this function but we will focus on neural networks, which can represent every possible parametric function.
-To get a good parametrization, we need a loss function. The goal of function approximation will therefore be to minimize that loss. Here we turn to the Bellman equations and n-step TD learning to get a good loss function.
+In Reinforcement Learning the general goal is to learn for our  computer program (called the _agent_) what is best think to do given its current situation (called the _state_) given the available possible things to do (called _actions_). An environment can be anything like a 2D maze, a [boardgame](https://nl.wikipedia.org/wiki/Backgammon), a [really complicated boardgame](https://deepmind.com/research/case-studies/alphago-the-story-so-far) or anything else that's learnable. Each environment has rewards attach, that can be negative or positive depending on what our agent does. For example in  the simple 2D maze, there is probably a big positive reward for reaching the end but maybe a small negative reward for every step taken, as walking is painful!
+
+In the most classical approach of Reinforcement Learning we would simply keep a table handy with all states and actions and just keep track of how much reward we have gotten subsequently from that position. During training we fill the table with the experience of our agent. Later the agent just needs to pick the most rewarding action from this table and that's it.
+
+### Value approximation
+When number of states get too big keep track of in a table, instead we can replace the table with function that approximates the correct table. This function, given a state, returns estimates of the corresponding values for all possible actions. We need to pick a family of functions that is capable of this complexity. In this research we focus on artificial neural networks, as in [theory they can approximate any parametric function](https://en.wikipedia.org/wiki/Universal_approximation_theorem).
+
+For training of our state-action-value-function we need a definition of the loss. The loss function tells the network how good the prediction (in our case the value of a action given the state) really is. If the loss gets small, the estimations given by our value function get closer to the truth. Almost all of reinforcement learning is base on the [Bellman equations](https://joshgreaves.com/reinforcement-learning/understanding-rl-the-bellman-equations/). The most basic Bellman equation for our state-action value (called the $$Q$$-value) is:
 
 $$Q_{\pi}(s, a) = E_{s'}[r + \gamma max_{a'}Q_\pi(s', a')]$$
 
@@ -15,7 +21,7 @@ Q_\pi(s_t, a_t) = E_\tau [G + \gamma^{n+1} q(s_{t+n}, a_{t+n})]\\
 G = \sum_{i=0}^{n} \gamma^i r_{t+i}
 $$
 
-A bigger $$n$$ reduces bias of the convergence, as we use more actual rewards, and reduces variance, due to the expectation over possible trajectories requiring less samples to converge. Note that if $$n$$ is equal to infinity, then we always reach the end of the episode, and we have a Monte Carlo algorithm. 
+A bigger $$n$$ reduces bias of the convergence, as we use more actual rewards, and reduces variance, due to the expectation over possible trajectories requiring less samples to converge. Note that if $$n$$ is equal to infinity, then we always reach the end of the episode, and we have a Monte Carlo algorithm.
 
 Although we don't have any convergence guarantees for the function approximation case, we can still make use of them for a loss function:
 
@@ -28,7 +34,7 @@ $$
 PLEASE CITE BISHOP PAGE 199!
 -->
 
-$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment. 
+$$v_\pi(s)$$ and $$\hat{v}_\pi(s, w)$$ are respectively the true value of $$s$$ under policy $$\pi$$ and the predicted or approximated value of $$s$$ under the parametrization w. $$\mu(s)$$ is the importance given to state s and normally approximated with the relative number of times it appears in the experiences we have with the environment.
 
 Due to the usual impossibility of finding a closed-form solution to the minimization of $$L$$, we turn to gradient-based methods, and specifically to [stochastic gradient descent](https://en.wikipedia.org/wiki/Stochastic_gradient_descent) (SGD).
 
@@ -41,9 +47,9 @@ $$
 $$
 
 We assume that the target $$q_\pi(s,a)$$ is independent of the parametrization $$w$$, which is not true, as unless we reach the final state, we still have to calculate the q-value of the final state-action using $$w$$. Because of that, this gradient is called semi-gradient.
-Without this assumption we would calcutate the full gradient.
+Without this assumption we would calculate the full gradient.
 
-Experience replay is used as a mechanism that smooths the training distribution, and reduces correlation between used samples which is an assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters' oscilation or divergence (see [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf)).
+Experience replay is used as a mechanism that smooths the training distribution, and reduces correlation between used samples which is an assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters' oscillation or divergence (see [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf)).
 
 $$\epsilon$$-decay is also used as an exploration strategy. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as 0.05. This allows for more exploration in the beginning, which is extremely necessary in the case of scarce rewards, and more exploitation later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
@@ -114,7 +120,7 @@ Our reinforcement learning agent consists of a semi-gradient Q-learning agent, w
 
 ## Results
 
-We test our hypothesis in a couple of different enviroments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/), [Ms PacMan](https://gym.openai.com/envs/MsPacman-v0/), and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
+We test our hypothesis in a couple of different environments: [FrozenLake](https://gym.openai.com/envs/FrozenLake-v0/), [CartPole](https://gym.openai.com/envs/CartPole-v1/), [Acrobot](https://gym.openai.com/envs/Acrobot-v1/), [Ms PacMan](https://gym.openai.com/envs/MsPacman-v0/), and the [algorithmic environments](https://gym.openai.com/envs/#algorithmic).
 
 The results did not show a clear advantage of using full-gradient over semi-gradient. While the computation of the full-gradient is only $O(1)$ more expensive, it did not outperform semi-gradient.
 This might be due two reasons.
@@ -185,7 +191,7 @@ The CNN consists of the following (2d) layers:
 - linear
 
 <!--
-Training on GPU neccessary.
+Training on GPU necessary.
 -->
 
 ### [Algorithmic environments](https://gym.openai.com/envs/#algorithmic)
