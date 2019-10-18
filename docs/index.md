@@ -37,7 +37,7 @@ Although we don't have any convergence guarantees for the function approximation
 
 $$
 \begin{align*}
-\mathcal{L} &= \sum_s \mu(s) [Q_\pi(s,a) - \hat{Q}(s,a|w))]^2
+\mathcal{L} &= \sum_s \mu(s) [Q_\pi(s,a) - \hat{Q}(s,a|w))]^2\\
 Q_(s,a) &= \mathbb{E}_\tau [G + \gamma^{n+1} Q_{\pi}(s_{t+n}, a_{t+n})]
 \end{align*}
 $$
@@ -63,13 +63,15 @@ Without this assumption we would calculate the full gradient.
 
 ### Best practices
 #### Experience Replay
-Experience replay is used to smooth the training distribution, and to reduce correlation between used samples which is an assumption in stochastic gradient descent. It consists of sampling from a fixed size of the last experiences to update the network. This reduces parameters' oscillation or divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
+Experience replay is a best practice used to smooth the variance of the weight updates to our network. For this we save the trajectories (the experience) in fixed size list and in every step we randomly sample a batch of experiences from this list to update with. More importantly this also breaks the temporal correlation between our samples, which is important as SGD needs independent samples. Experience replay reduces parameters' oscillation or likelihood to divergence (see the [DQN paper](https://www.cs.toronto.edu/~vmnih/docs/dqn.pdf) for a complete justification).
 
 #### $$epsilon$$-decay
-$$\epsilon$$-decay is also used as an exploration strategy. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as 0.05. This allows for more exploration in the beginning, which is extremely necessary in the case of scarce rewards, and more exploitation later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
+$$\epsilon$$-decay is another commonly used best practice. It employs an $$\epsilon$$-greedy strategy, but with a linear decay of its parameter $$\epsilon$$. This decrease is stopped when $$\epsilon$$ reaches some minimal value such as $$0.05$$. This allows for more _exploration_ in the beginning (actually complete randomness in the absolute beginning), which is necessary in the case of scarce rewards, and more _exploitation_ later on, allowing for better convergence of the state action values using a closer-to-optimal policy.
 
 
 ## Environments
+
+We conduct multiple experiments using different environments. We went through all of the, at version `0.15.3`, 747 environments of the OpenAI Gym package. The analysis on environment properties can be found [in a notebook](https://colab.research.google.com/drive/1ZAs_M0-0hrqrf9Qo7jkfJDrErRThpngZ), which lists environments sorted by complexity as measured by multiplied size of action and observation spaces, from easy to hard.
 
 We thought about different environment properties to compare by, and came up with the following:
 
@@ -86,16 +88,12 @@ action:
 reward:
 - episodic vs continuing (discounting)
 
-<!--
-People also talk about like multi-player (co-op / adversarial) environments, but we see these just as regular environments with partial observability (gotta model the other actors, just as you'd model anything else in your environment). Maybe a difference is the other actors may also learn, invalidating your older intel. For our current purposes we will not focus on these environments though.
--->
-
 Unfortunately, some properties are missing representation among Gym environments altogether:
 - continuous time
 - stateless games e.g. Multi-Armed Bandit
 
 Our next step is to get a list of environments classified by these criteria.
-[Environments](https://gym.openai.com/environments/Copy-v0/) we used all come directly from OpenAI's [gym](https://github.com/openai/gym) library, without additional extensions (e.g. OpenAI's [retro](https://github.com/openai/retro) environments).
+[Environments](https://gym.openai.com/environments/) we used all come directly from OpenAI's [gym](https://github.com/openai/gym) library, without additional extensions (e.g. OpenAI's [retro](https://github.com/openai/retro) environments).
 
 Ideally, we want to be able to find environments with certain properties automatically. To do this, we want to be able to programmatically access the properties of the environment.
 
@@ -128,9 +126,8 @@ Based on this, we can probably just use some popular environments of manageable 
 
 ## Implementation
 
-For predicting the Q-values given a state, we need an approximation function.
 For this, we use a simple neural network, consisting of a linear layer with 128 hidden units, a ReLU activation, and another linear layer.
-We use the Adam optimizer, a smooth L1 loss, and a learning rate $$\alpha = 0.001$$.
+We use the [Adam optimizer](https://machinelearningmastery.com/adam-optimization-algorithm-for-deep-learning/), a smooth L1 loss, and a learning rate $$\alpha = 0.001$$.
 Our reinforcement learning agent consists of a semi-gradient Q-learning agent, with reward decay $$\gamma = 0.8$$, a final random action ratio $$\epsilon = 0.05$$ after 1,000 episodes of decay, a memory unit of 10,000 cells, 2 steps to consider, and a batch size of 64.
 
 ## Results
@@ -150,12 +147,17 @@ FrozenLake is an environment where both state and observation spaces are discret
 {% include FrozenLake-v0_G.html %}
 </figure>
 
+To replicate these exact experiments deterministically (using the same seeds for the pseudo-generator) run:
+```bash
+python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
+```
+
 ### [Cart Pole](https://gym.openai.com/envs/CartPole-v1/)
 <video autoplay loop controls>
     <source src="cartpole.mp4" type="video/mp4">
 </video>
 
-Our first experiment is using [OpenAI gym](http://gym.openai.com/)'s popular [CartPole-v0](https://gym.openai.com/environments/CartPole-v0/) enviroment, featuring a continuous observation space, yet a discrete action space.
+The next experiment is using the [CartPole-v0](https://gym.openai.com/environments/CartPole-v0/) environment, featuring a continuous observation space and a discrete action space.
 
 As we want to compare the influence of the semi-gradient at different lengths of the dependency list for Q-learning, we test with $$n$$ steps, for $$n\in [0, 3, 8]$$.
 $$\gamma$$ is fixed to $$0.8$$.
@@ -168,6 +170,14 @@ The runs using semi-gradient and using full-gradient are color-coded.
 <figure>
 {% include CartPole-v0_duration.html %}
 </figure>
+
+To replicate this exact experiment run:
+```bash
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=1 --env_ids CartPole-v0
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=4 --env_ids CartPole-v0
+python run_envs.py --num_seeds=5 --alpha=1e-3 --gamma=0.8 --n_episodes=100 --n_step=8 --env_ids CartPole-v0
+```
+
 
 ### [Acrobot](https://gym.openai.com/envs/Acrobot-v1/)
 
@@ -211,7 +221,8 @@ Training on GPU necessary.
 
 ### [Algorithmic environments](https://gym.openai.com/envs/#algorithmic)
 
-The algorithmic environments are somewhat simpler, and similar in nature. Like FrozenLake and MsPacman, they feature discrete action and observation spaces.
+The algorithmic environments are somewhat simpler, and similar in nature.
+Like FrozenLake and MsPacman, they feature discrete action and observation spaces.
 
 #### [Copy](https://gym.openai.com/envs/Copy-v0/)
 
@@ -236,3 +247,8 @@ The algorithmic environments are somewhat simpler, and similar in nature. Like F
 <figure>
 {% include Reverse-v0_G.html %}
 </figure>
+
+To replicate these exact experiments run:
+```bash
+python run_envs.py --num_seeds=10 --alpha=1e-5 --gamma=0.95 --n_episodes=2000 --n_step=3 --env_ids Copy-v0 RepeatCopy-v0 Reverse-v0 DuplicatedInput-v0 ReversedAddition-v0 ReversedAddition3-v0
+```

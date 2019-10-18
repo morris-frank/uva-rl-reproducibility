@@ -13,12 +13,14 @@ from typing import List
 from .utils import load_csv
 
 
-def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, win:int = 20):
+def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, win:int = 20, standalone:bool = False):
     """
         env: which enviroment to plot for
         var: which variable to plot against the episodes
         n_steps: list of n steps to plot for
         ncols: numbe rof columns in the output
+        win: size of the smoothing avg window
+        standalone: to plto also standalone
     """
     df = load_csv(env)
     # df = pd.read_csv('data/CartPole-v0.csv', dialect='unix')
@@ -33,7 +35,7 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, w
     figs = []
     for n_step in n_steps:
         step_df = df[df.n_step == n_step]
-        fig = figure(title=f'{varnames.get(var, var)} using {n_step - 1}-step TD', active_scroll='wheel_zoom')
+        fig = figure(title=f'{varnames.get(var, var)} using {n_step}-step TD', active_scroll='wheel_zoom')
         for semi in (True, False):
             # _df = step_df[df.semi_gradient == semi]
             # fig.circle(_df.episode, _df[var], legend=cnf[semi]['legend'], line_color=cnf[semi]['color'])
@@ -58,11 +60,15 @@ def plot(env: str, var: str  = 'duration', n_steps:List = None, ncols:int = 3, w
         figs.append(fig)
 
     grid = gridplot(figs, ncols=ncols, sizing_mode='stretch_both', toolbar_location='below')
-    html_components = '\n'.join(components(grid))
-    html_standalone = file_html(grid, CDN, f"{env}_{var}")
 
-    for html, postfix in zip((html_components, html_standalone), ('', '_standalone')):
-        path = os.path.join(os.getcwd(), 'docs/_includes', f'{env}_{var}{postfix}.html')
-        print(f'Save plot to {path}')
+    html_components = '\n'.join(components(grid))
+    path = os.path.join(os.getcwd(), 'docs/_includes', f'{env}_{var}.html')
+    print(f'Save plot to {path}')
+    with open(path, 'w') as fp:
+        fp.write(html_components)
+
+    if standalone:
+        html_standalone = file_html(grid, CDN, f"{env}_{var}")
+        path = os.path.join(os.getcwd(), 'docs/_includes', f'{env}_{var}_standalone.html')
         with open(path, 'w') as fp:
-            fp.write(html)
+            fp.write(html_standalone)
